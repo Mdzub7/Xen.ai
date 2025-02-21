@@ -1,0 +1,153 @@
+.code-block-container {
+  position: relative;
+  margin: 1rem 0;
+  background-color: #1e1e1e;
+  border-radius: 6px;
+  overflow: hidden;
+  max-width: calc(100% - 2rem); /* Prevent overlap with AI panel */
+}
+
+.code-block-container pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  max-width: 100%;
+
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.code-block-container code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  display: block;
+}
+
+.code-actions {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.code-block-container:hover .code-actions {
+  opacity: 1;
+}
+
+.code-actions button {
+  background-color: #2d2d2d;
+  color: #d4d4d4;
+  border: none;
+  padding: 0.25rem 0.5rem;  /* Reduced padding */
+  border-radius: 3px;       /* Slightly smaller radius */
+  font-size: 0.75rem;      /* Smaller font size */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Update code container styles */
+.code-block-container pre {
+  margin: 0;
+  padding: 1.5rem;
+  overflow-x: auto;
+  white-space: pre;        /* Changed from pre-wrap to preserve tabs */
+  tab-size: 2;            /* Set tab size */
+  -moz-tab-size: 2;
+  font-family: 'Fira Code', monospace;
+}
+
+.code-block-container code {
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  display: block;
+}
+
+.code-actions button:hover {
+  background-color: #3d3d3d;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.code-actions button:active {
+  transform: translateY(0);
+}
+
+/* Syntax highlighting colors */
+/* Enhanced Syntax Highlighting */
+.hljs {
+  color: #d4d4d4;
+  background: transparent;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type {
+  color: #569cd6;  /* blue for keywords */
+}
+
+.hljs-string,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-quote,
+.hljs-template-tag,
+.hljs-deletion {
+  color: #ce9178;  /* orange for strings */
+}
+
+.hljs-title,
+.hljs-section {
+  color: #dcdcaa;  /* yellow for function names */
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #6a9955;  /* green for comments */
+}
+
+.hljs-meta,
+.hljs-meta-keyword {
+  color: #9b9b9b;  /* gray for metadata */
+}
+
+.hljs-literal,
+.hljs-number,
+.hljs-boolean {
+  color: #b5cea8;  /* light green for numbers/booleans */
+}
+
+.hljs-built_in,
+.hljs-builtin-name {
+  color: #4ec9b0;  /* teal for built-in functions */
+}
+
+.hljs-symbol,
+.hljs-attr {
+  color: #9cdcfe;  /* light blue for properties */
+}
+
+.hljs-params {
+  color: #d4d4d4;  /* default color for parameters */
+}
+
+.hljs-variable,
+.hljs-template-variable {
+  color: #9cdcfe;  /* light blue for variables */
+}
+
+.hljs-addition,
+.hljs-link {
+  color: #b5cea8;  /* light green for additions */
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
