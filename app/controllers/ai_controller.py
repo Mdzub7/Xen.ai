@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from ..services.ai_service import generate_review  # Import from services/ai_service.py
+from ..services.ai_service import generate_review
 from ..models.code_model import CodeRequest
 
 async def get_review(payload: CodeRequest):
