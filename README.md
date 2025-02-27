@@ -128,6 +128,8 @@ Configuration
 Create a .env file in main file and add:
 ```
 GEMINI_API_KEY=your_google_gemini_api_key
+DEEPSEEK_API_KEY=from www.openrouter.ai #get DeepSeek:R1(free) and app name as'xen.ai' with unlimited tokens
+GROQ_API_KEY=from www.groq.com
 ```
 Replace your_google_gemini_api_key with your actual API key.
 Running the Server

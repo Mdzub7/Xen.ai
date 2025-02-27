@@ -8,4 +8,8 @@ router = APIRouter()
 @router.post("/get-review")
 async def review_code(payload: CodeRequest):
     """Route to process AI code review."""
-    return await get_review(payload)
+    try:
+        review = await get_review(payload.code, payload.service_choice)
+        return {"review": review}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
