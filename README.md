@@ -111,10 +111,34 @@ cd Xen-ai
 cd frontend
 npm install
 ```
-3. Start the development server
-```
-cd backend
-npx nodemon
+3. Create a Virtual Environment
+
+python -m venv venv
+source venv/bin/activate  # For macOS/Linux
+venv\Scripts\activate  # For Windows
+
+4. Install Dependencies
+
+pip install -r requirements.txt
+
+Configuration
+
+1. Set Up Environment Variables
+
+Create a .env file in main file and add:
+
+GEMINI_API_KEY=your_google_gemini_api_key
+
+Replace your_google_gemini_api_key with your actual API key.
+Running the Server
+
+Start the FastAPI server with:
+
+uvicorn app.main:app --reload
+
+By default, the server runs at:
+➡️ http://127.0.0.1:8000
+
 ```
 4. Start Frontend server
 ```
