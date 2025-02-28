@@ -40,27 +40,30 @@ export const Toolbar: React.FC = () => {
     if (!isAIPanelOpen) {
       toggleAIPanel();
     }
-
+  
     addMessage({
       id: Math.random().toString(36).substr(2, 9),
       role: 'user',
       content: `Please review this code:\n\n${currentFile.content}`,
       timestamp: new Date().toISOString()
     });
-
+  
     try {
       const response = await fetch('http://127.0.0.1:8000/ai/get-review', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: currentFile.content }),
+        body: JSON.stringify({ 
+          code: currentFile.content,
+          service_choice: "gemini"  // This will be the default model
+        }),
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to get AI response');
       }
-
+  
       const aiResponse = await response.text();
       addMessage({
         id: Math.random().toString(36).substr(2, 9),
@@ -80,9 +83,9 @@ export const Toolbar: React.FC = () => {
   };
 
   return (
-    <div className="h-12 bg-[#1e1e1e] border-b border-[#3c3c3c] flex items-center px-4 space-x-2">
+    <div className="h-12 bg-[#161b22] border-b border-[#30363d] flex items-center px-4 space-x-2">
       <button
-        className="p-2 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}
         onClick={runCode}
         title="Run Code"
@@ -90,7 +93,7 @@ export const Toolbar: React.FC = () => {
         <Play size={18} />
       </button>
       <button
-        className="p-2 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}
         onClick={handleDebug}
         title="Debug"
@@ -98,7 +101,7 @@ export const Toolbar: React.FC = () => {
         <Bug size={18} />
       </button>
       <button
-        className="p-2 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}
         onClick={formatCode}
         title="Format Code"
@@ -106,7 +109,7 @@ export const Toolbar: React.FC = () => {
         <Wand2 size={18} />
       </button>
       <button
-        className="p-2 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}
         onClick={handleCopyCode}
         title="Copy Code"
@@ -114,7 +117,7 @@ export const Toolbar: React.FC = () => {
         <Copy size={18} />
       </button>
       <button
-        className="p-2 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}
         onClick={saveFile}
         title="Save"
@@ -122,7 +125,7 @@ export const Toolbar: React.FC = () => {
         <Save size={18} />
       </button>
       <button
-        className="p-2 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}
         onClick={handleCodeReview}
         title="Code Review"
@@ -131,8 +134,8 @@ export const Toolbar: React.FC = () => {
       </button>
       <div className="flex-1" />
       <button
-        className={`p-2 rounded text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 ${
-          isAIPanelOpen ? 'bg-[#2d2d2d] hover:bg-[#3c3c3c]' : 'hover:bg-[#3c3c3c]'
+        className={`p-2 rounded text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 ${
+          isAIPanelOpen ? 'bg-[#21262d] hover:bg-[#30363d]' : 'hover:bg-[#21262d]'
         }`}
         disabled={!currentFile}
         onClick={() => toggleAIPanel()}

@@ -73,20 +73,20 @@ export const FileExplorer: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-[#252526] text-white overflow-y-auto border-r border-[#3c3c3c]">
-      <div className="p-4">
+    <div className="h-full bg-[#0d1117] text-[#e6edf3] overflow-y-auto">
+      <div className="p-4 border-b border-[#30363d] bg-[#161b22]">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold uppercase">Explorer</h2>
+          <h2 className="text-sm font-medium">Explorer</h2>
           <div className="flex space-x-2">
             <button
-              className="p-1 hover:bg-[#3c3c3c] rounded"
+              className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
               title="New File"
               onClick={handleNewFileClick}
             >
               <FilePlus size={16} />
             </button>
             <button
-              className="p-1 hover:bg-[#3c3c3c] rounded"
+              className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
               title="New Folder"
               onClick={() => setIsCreatingFolder(true)}
             >

@@ -18,7 +18,10 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
+  model?: AIModel;
 }
+
+export type AIModel = 'gemini' | 'deepseek' | 'qwen-2.5';
 
 export interface TerminalHistory {
   command: string;

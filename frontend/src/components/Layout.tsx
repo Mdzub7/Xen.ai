@@ -10,6 +10,7 @@ import { SourceControlView } from './views/SourceControlView';
 import { ExtensionsView } from './views/ExtensionsView';
 import { SettingsView } from './views/SettingsView';
 import { ProfileView } from './views/ProfileView';
+import { Toolbar } from './Toolbar';
 
 const Layout: React.FC = () => {
   const { isAIPanelOpen, currentView } = useEditorStore();
@@ -34,29 +35,32 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen">
-      <ActivityBar />
+    <div className="flex h-screen overflow-hidden bg-[#0d1117]">
+      {/* Activity Bar */}
+      <div className="fixed left-0 top-0 bottom-0 w-12 z-10 bg-[#161b22] border-r border-[#30363d]">
+        <ActivityBar />
+      </div>
       
       {/* Side Panel */}
       {currentView !== 'none' && (
-        <div className="w-[14%] border-r border-gray-700 bg-[#1e1e1e]">
+        <div className="fixed left-12 top-0 bottom-0 w-60 border-r border-[#30363d] bg-[#0d1117] z-10">
           {renderSidePanel()}
         </div>
       )}
 
       {/* Main Content Area */}
-      <div className={`flex flex-col ${isAIPanelOpen ? 'w-[56%]' : 'flex-1'}`}>
-        <div className="flex-grow">
+      <div className={`ml-[288px] flex-1 flex flex-col ${isAIPanelOpen ? 'mr-[30vw]' : ''}`}>
+        <div className="flex-grow h-[70vh] overflow-hidden bg-[#0d1117]">
           <Editor />
         </div>
-        <div className="h-[30%] border-t border-gray-700">
+        <div className="h-[30vh] border-t border-[#30363d] bg-[#161b22]">
           <Terminal />
         </div>
       </div>
 
       {/* AI Panel */}
       {isAIPanelOpen && (
-        <div className="w-[30%] border-l border-gray-700 bg-[#1e1e1e]">
+        <div className="fixed right-0 top-0 h-[70vh] w-[30vw] border-l border-[#30363d] bg-[#0d1117] z-50">
           <AIPanel />
         </div>
       )}

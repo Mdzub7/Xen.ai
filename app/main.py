@@ -2,9 +2,20 @@ from fastapi import FastAPI
 from .routes import ai,judge0_route
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(
+    title="AI Powered Code Reviewer",
+    description="An API for AI-powered code review and execution",
+    version="1.0.0"
+)
 
-
+@app.get("/")
+async def root():
+    """Root endpoint to check if the server is running."""
+    return {
+        "status": "online",
+        "message": "AI Code Reviewer API is running",
+        "available_services": ["gemini", "deepseek", "qwen-2.5"]
+    }
 
 app.add_middleware(
     CORSMiddleware,

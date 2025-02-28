@@ -1,5 +1,17 @@
 import { create } from 'zustand';
-import type { EditorState, File, Folder, Message, View } from '../types';
+import type { File, Folder, Message, View } from '../types';
+
+interface EditorState {
+  currentFile: File | null;
+  files: File[];
+  folders: Folder[];
+  isAIPanelOpen: boolean;
+  messages: Message[];
+  currentView: View;
+  terminalCommands: string[];
+  terminalHistory: TerminalEntry[];
+  selectedModel: AIModel;
+}
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -75,6 +87,9 @@ type TerminalEntry = {
   output: string;
 };
 
+// Add AIModel type definition
+type AIModel = 'gemini' | 'deepseek' | 'qwen-2.5';
+
 type EditorStateWithMethods = EditorState & {
   setCurrentView: (view: View) => void;
   addFile: (file: File) => void;
@@ -92,11 +107,13 @@ type EditorStateWithMethods = EditorState & {
   runCode: () => void;
   initializeDefaultFile: () => void;
   updateFileLanguage: (fileId: string, language: string) => void;
+  setSelectedModel: (model: AIModel) => void;
 };
 
 const isAIView = (view: View): boolean => ['ai', 'debug'].includes(view);
 
 export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
+  // Initial state
   currentFile: null,
   files: [],
   folders: [],
@@ -105,6 +122,22 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   currentView: 'explorer',
   terminalCommands: [],
   terminalHistory: [],
+  selectedModel: 'gemini',
+
+  // Add model setter
+  setSelectedModel: (model: AIModel) => set((state) => ({
+    ...state,
+    selectedModel: model
+  })),
+
+  // Single implementation of addMessage with model information
+  addMessage: (message: Message) => set((state) => ({
+    ...state,
+    messages: [...state.messages, {
+      ...message,
+      model: state.selectedModel
+    }]
+  })),
 
   setCurrentView: (view: View) => {
     set((state) => ({
@@ -151,8 +184,6 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   },
 
   toggleAIPanel: () => set((state) => ({ ...state, isAIPanelOpen: !state.isAIPanelOpen })),
-
-  addMessage: (message: Message) => set((state) => ({ ...state, messages: [...state.messages, message] })),
 
   createNewFile: (name: string, language: string, folderId?: string) => {
     // If no language is specified, try to infer from the file extension
@@ -310,11 +341,11 @@ ${currentFile.content.split('\n').map(line => '        ' + line).join('\n')}
           output: "No output returned." 
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Execution error:", error);
       addTerminalCommand({ 
         command: "Execution Error:", 
-        output: error.message || String(error)
+        output: error instanceof Error ? error.message : String(error)
       });
     }
   },

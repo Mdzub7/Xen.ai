@@ -73,49 +73,49 @@ export const Terminal: React.FC = () => {
   };
 
   return isVisible ? (
-    <div className="h-full flex flex-col bg-[#1e1e1e]">
-      <div className="flex items-center justify-between px-4 py-1 bg-[#252526] border-b border-[#3c3c3c]">
+    <div className="h-full flex flex-col bg-[#0d1117]">
+      <div className="flex items-center justify-between px-4 py-1 bg-[#161b22] border-b border-[#30363d]">
         <div className="flex items-center space-x-2">
-          <TerminalIcon size={14} className="text-gray-400" />
-          <span className="text-sm text-gray-300">Terminal</span>
+          <TerminalIcon size={14} className="text-[#7d8590]" />
+          <span className="text-sm text-[#e6edf3]">Terminal</span>
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-white"
+            className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
           >
             {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
           <button
             onClick={() => setIsVisible(false)}
-            className="p-1 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-white"
+            className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
           >
             <X size={14} />
           </button>
         </div>
       </div>
-      <div ref={terminalRef} className="flex-1 overflow-y-auto p-2 text-gray-300 font-mono text-sm">
+      <div ref={terminalRef} className="flex-1 overflow-y-auto p-2 text-[#e6edf3] font-mono text-sm">
         {terminalHistory.map((entry, index) => (
           <div key={index} className="whitespace-pre-wrap">
             <div className="flex items-center">
-              <span className="text-green-500">➜</span>
-              <span className="text-blue-400 ml-2">~/project</span>
-              <span className="ml-2">$</span>
+              <span className="text-[#7ee787]">➜</span>
+              <span className="text-[#58a6ff] ml-2">~/project</span>
+              <span className="ml-2 text-[#7d8590]">$</span>
               <span className="ml-2">{entry.command}</span>
             </div>
-            <div className="text-gray-400 ml-6">{entry.output}</div>
+            <div className="text-[#7d8590] ml-6">{entry.output}</div>
           </div>
         ))}
         <div className="flex items-center mt-2">
-          <span className="text-green-500">➜</span>
-          <span className="text-blue-400 ml-2">~/project</span>
-          <span className="ml-2">$</span>
+          <span className="text-[#7ee787]">➜</span>
+          <span className="text-[#58a6ff] ml-2">~/project</span>
+          <span className="ml-2 text-[#7d8590]">$</span>
           <input
             type="text"
             value={currentCommand}
             onChange={(e) => setCurrentCommand(e.target.value)}
             onKeyDown={handleCommand}
-            className="flex-1 ml-2 bg-transparent border-none outline-none text-gray-300"
+            className="flex-1 ml-2 bg-transparent border-none outline-none text-[#e6edf3]"
             spellCheck={false}
           />
         </div>

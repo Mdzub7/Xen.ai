@@ -27,8 +27,8 @@ export const SearchView: React.FC = () => {
   };
 
   return (
-    <div className="h-full w-64 min-w-64 bg-[#252526] text-white p-4 overflow-y-auto">
-      <h2 className="text-sm font-semibold uppercase mb-4">Search</h2>
+    <div className="h-full bg-[#0d1117] text-[#e6edf3] p-4 overflow-y-auto">
+      <h2 className="text-sm font-medium text-[#e6edf3] mb-4">Search</h2>
       <div className="flex space-x-2 mb-4">
         <input
           type="text"
@@ -36,23 +36,23 @@ export const SearchView: React.FC = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search in files..."
-          className="flex-1 bg-[#3c3c3c] text-white px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex-1 bg-[#161b22] text-[#e6edf3] px-3 py-1.5 rounded-md text-sm border border-[#30363d] focus:outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
         />
         <button
           onClick={handleSearch}
-          className="p-1.5 hover:bg-[#3c3c3c] rounded text-gray-400 hover:text-white transition-colors"
+          className="p-1.5 hover:bg-[#21262d] rounded-md text-[#7d8590] hover:text-[#e6edf3] transition-colors border border-[#30363d]"
         >
           <Search size={16} />
         </button>
       </div>
       <div className="space-y-2 overflow-y-auto">
         {searchResults.map((result, index) => (
-          <div key={index} className="text-sm hover:bg-[#2a2a2a] p-1 rounded cursor-pointer">
-            <div className="text-gray-400 flex items-center space-x-2">
+          <div key={index} className="text-sm hover:bg-[#161b22] p-2 rounded-md cursor-pointer border border-[#30363d]">
+            <div className="text-[#7d8590] flex items-center space-x-2">
               <span>{result.file}</span>
               <span className="text-xs">:{result.line}</span>
             </div>
-            <div className="pl-4 border-l border-[#3c3c3c] mt-1 text-gray-300">
+            <div className="pl-4 border-l border-[#30363d] mt-1 text-[#e6edf3]">
               {result.content}
             </div>
           </div>

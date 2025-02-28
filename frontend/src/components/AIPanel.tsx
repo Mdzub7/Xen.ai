@@ -20,9 +20,9 @@ interface Section {
   label?: string;
 }
 
+// Add a close button to the top of the panel
 export const AIPanel: React.FC = () => {
-  // Add loading state
-  const { isAIPanelOpen, toggleAIPanel, messages, addMessage } = useEditorStore();
+  const { isAIPanelOpen, toggleAIPanel, messages, addMessage, selectedModel, setSelectedModel } = useEditorStore();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -68,6 +68,10 @@ export const AIPanel: React.FC = () => {
     return parts;
   };
 
+  const handleModelSelect = (model: string) => {
+    setSelectedModel(model as any); // Cast to AIModel type
+  };
+
   const handleSendMessage = async () => {
     if (!input.trim()) return;
     setIsLoading(true);
@@ -87,7 +91,10 @@ export const AIPanel: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: input }),
+        body: JSON.stringify({ 
+          code: input,
+          service_choice: selectedModel
+        }),
       });
 
       if (!response.ok) {
@@ -238,64 +245,91 @@ export const AIPanel: React.FC = () => {
   };
 
   return (
-    <div className="fixed right-0 top-[48px] bottom-[22px] w-[30%] bg-[#1e1e1e] border-l border-[#3c3c3c] flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-[#3c3c3c]">
-        <h3 className="text-white font-semibold">AI Assistant</h3>
-        <button onClick={toggleAIPanel} className="text-gray-400 hover:text-white">
-          <X size={18} />
-        </button>
+    <div className="fixed right-0 top-0 h-[97.3vh] w-[30vw] flex flex-col bg-[#0d1117] border-l border-[#30363d] shadow-lg z-50">
+      {/* Header with tabs and close button */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#30363d] bg-[#161b22]">
+        <div className="flex items-center gap-4">
+          <span className="text-[#e6edf3] font-medium">Chat</span>
+          <span className="text-[#7d8590]">Builder <span className="text-xs px-1.5 py-0.5 rounded bg-[#30363d]">Beta</span></span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"></path></svg>
+          </button>
+          <button className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16Zm3.78-9.72a.751.751 0 0 0-.018-1.042.751.751 0 0 0-1.042-.018L6.75 9.19 5.28 7.72a.751.751 0 0 0-1.042.018.751.751 0 0 0-.018 1.042l2 2a.75.75 0 0 0 1.06 0Z"></path></svg>
+          </button>
+          <button 
+            onClick={toggleAIPanel}
+            className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]"
+            title="Close AI Panel"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
-      <div className="flex-1 p-6 text-gray-300 overflow-y-auto">
-        {messages.length === 0 ? (
-          <div className="text-gray-500 text-center mt-4">
-            Start a conversation with the AI assistant
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {messages.map((message: Message) => (
+
+      {/* Empty state - centered content */}
+      {messages.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <h1 className="text-2xl font-semibold text-[#e6edf3] mb-2">Xen.ai Mode</h1>
+          <p className="text-[#7d8590] text-sm max-w-md">
+            Feel free to ask questions or seek advice about your codebase or coding in general.
+          </p>
+        </div>
+      )}
+
+      {/* Messages area */}
+      {messages.length > 0 && (
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-6 last:mb-2`}
+            >
               <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`${
+                  message.role === 'user'
+                    ? 'ml-auto bg-[#2d333b] text-[#e6edf3] max-w-[85%]'
+                    : 'mr-auto bg-[#22272e] text-[#e6edf3] max-w-[90%]'
+                } rounded-lg p-6 shadow-md`}
               >
-                <div
-                  className={`max-w-[95%] rounded-lg p-6 ${
-                    message.role === 'user'
-                      ? 'bg-[#595959] text-gray-100 shadow-md'  // Light blue tint for user
-                      : 'bg-[#323130] text-gray-200 shadow-md'  // Dark blue tint for AI
-                  }`}
-                >
-                  {renderMessageContent(message.content)}
-                  <p className="text-xs text-gray-400 mt-4 pt-2 border-t border-[#ffffff1a]">
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </p>
-                </div>
+                {renderMessageContent(message.content)}
+                <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
+                  {new Date(message.timestamp).toLocaleTimeString()}
+                </p>
               </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-[#2d2d45] rounded-lg p-6 max-w-[95%] shadow-md">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                    </div>
-                    <span className="text-gray-400">AI is thinking...</span>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start mb-6">
+              <div className="mr-auto bg-[#161b22] rounded-lg p-6 max-w-[90%] shadow-md">
+                <div className="flex items-center space-x-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-[#4f8cc9] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                    <div className="w-2 h-2 bg-[#4f8cc9] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                    <div className="w-2 h-2 bg-[#4f8cc9] rounded-full animate-bounce"></div>
                   </div>
+                  <span className="text-[#7d8590]">AI is thinking...</span>
                 </div>
               </div>
-            )}
-            {isLoading && <LoadingSpinner />}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-      </div>
-      <div className="p-4 border-t border-[#3c3c3c]">
-        <div className="flex space-x-2">
-          <input
-            type="text"
+            </div>
+          )}
+          {isLoading && <LoadingSpinner />}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
+        
+      {/* Input area with model selection dropdown */}
+      <div className="p-4 border-t border-[#30363d] bg-[#161b22]">
+        <div className="flex items-center gap-2">
+          <textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              e.target.style.height = 'inherit';
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`;
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -303,16 +337,63 @@ export const AIPanel: React.FC = () => {
               }
             }}
             placeholder="Ask the AI assistant..."
-            className="flex-1 bg-[#3c3c3c] text-white rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="flex-1 bg-[#0d1117] text-[#e6edf3] rounded-lg px-4 py-3 text-sm focus:outline-none 
+              border border-[#30363d] focus:border-[#4f8cc9] resize-none min-h-[44px] max-h-[150px] overflow-y-auto"
             disabled={isLoading}
+            rows={1}
           />
-          <button
-            onClick={handleSendMessage}
-            className="p-2 bg-[#2d2d2d] hover:bg-[#3c3c3c] rounded text-gray-300 hover:text-white transition-colors disabled:opacity-50"
-            disabled={isLoading}
-          >
-            <Send size={18} />
-          </button>
+          
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="relative group">
+              <button 
+                className="px-3 py-2 rounded bg-[#21262d] text-[#e6edf3] hover:bg-[#30363d] transition-colors duration-200 text-sm font-medium"
+              >
+                {selectedModel === 'gemini' ? 'Gemini' : 
+                 selectedModel === 'deepseek' ? 'DeepSeek' : 'Qwen'}
+              </button>
+              
+              <div 
+                className="absolute bottom-full mb-1 right-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                bg-[#161b22] rounded-md shadow-lg overflow-hidden z-50 transition-all duration-300 transform translate-y-1 
+                group-hover:translate-y-0 min-w-[120px]"
+              >
+                <div className="py-1">
+                  <button
+                    className={`w-full px-4 py-2 text-left text-sm ${
+                      selectedModel === 'gemini' ? 'bg-[#4f8cc9] text-white' : 'text-[#e6edf3] hover:bg-[#21262d]'
+                    } transition-colors duration-150`}
+                    onClick={() => handleModelSelect('gemini')}
+                  >
+                    Gemini
+                  </button>
+                  <button
+                    className={`w-full px-4 py-2 text-left text-sm ${
+                      selectedModel === 'deepseek' ? 'bg-[#4f8cc9] text-white' : 'text-[#e6edf3] hover:bg-[#21262d]'
+                    } transition-colors duration-150`}
+                    onClick={() => handleModelSelect('deepseek')}
+                  >
+                    DeepSeek
+                  </button>
+                  <button
+                    className={`w-full px-4 py-2 text-left text-sm ${
+                      selectedModel === 'qwen-2.5' ? 'bg-[#4f8cc9] text-white' : 'text-[#e6edf3] hover:bg-[#21262d]'
+                    } transition-colors duration-150`}
+                    onClick={() => handleModelSelect('qwen-2.5')}
+                  >
+                    Qwen
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleSendMessage}
+              className="px-3 py-2 rounded bg-[#21262d] text-[#7d8590] hover:bg-[#30363d] disabled:opacity-50"
+              disabled={isLoading}
+            >
+              <Send size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

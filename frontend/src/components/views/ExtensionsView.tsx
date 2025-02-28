@@ -9,26 +9,26 @@ export const ExtensionsView: React.FC = () => {
   ];
 
   return (
-    <div className="h-full bg-[#252526] text-white p-4">
-      <h2 className="text-sm font-semibold uppercase mb-4">Extensions</h2>
+    <div className="h-full bg-[#0d1117] text-[#e6edf3] p-4">
+      <h2 className="text-sm font-medium text-[#e6edf3] mb-4">Extensions</h2>
       <input
         type="text"
         placeholder="Search extensions..."
-        className="w-full bg-[#3c3c3c] text-white px-3 py-1 rounded text-sm mb-4"
+        className="w-full bg-[#161b22] text-[#e6edf3] px-3 py-1.5 rounded-md text-sm border border-[#30363d] focus:outline-none focus:border-[#58a6ff] mb-4"
       />
       <div className="space-y-4">
         {mockExtensions.map(ext => (
-          <div key={ext.id} className="flex items-start space-x-3 p-2 hover:bg-[#2a2a2a] rounded">
-            <Box size={16} className="mt-1" />
+          <div key={ext.id} className="flex items-start space-x-3 p-2 hover:bg-[#161b22] rounded-md border border-[#30363d]">
+            <Box size={16} className="mt-1 text-[#7d8590]" />
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{ext.name}</span>
-                <button className="p-1 hover:bg-[#3c3c3c] rounded">
+                <button className="p-1.5 hover:bg-[#21262d] rounded-md text-[#7d8590] hover:text-[#e6edf3]">
                   <Download size={14} />
                 </button>
               </div>
-              <div className="text-xs text-gray-400">{ext.publisher}</div>
-              <div className="text-sm mt-1">{ext.description}</div>
+              <div className="text-xs text-[#7d8590]">{ext.publisher}</div>
+              <div className="text-sm mt-1 text-[#e6edf3]">{ext.description}</div>
             </div>
           </div>
         ))}
