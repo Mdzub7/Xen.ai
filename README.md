@@ -147,7 +147,18 @@ By default, the server runs at:
 cd frontend
 npm run dev
 ```
-
+### DOCKER USGAE ###
+## How to Run Judge0 Locally
+1. Install **Docker** if not already installed: [Get Docker](https://docs.docker.com/get-docker/)
+2. set up PostgreSQL and Redis Password and DB inside judge0.conf file
+3. Convert the file using
+```
+$ dos2unix judge0.conf
+```
+3. Run the following command to start Judge0:
+   ```sh
+   docker-compose up -d
+```
 ## Usage
 1. Open the AI Assistant panel using the designated button
 2. Type your query or paste code for analysis
