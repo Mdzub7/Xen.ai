@@ -9,7 +9,7 @@ export const ExtensionsView: React.FC = () => {
   ];
 
   return (
-    <div className="h-full bg-[#0d1117] text-[#e6edf3] p-4">
+    <div className="h-full bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white p-4">
       <h2 className="text-sm font-medium text-[#e6edf3] mb-4">Extensions</h2>
       <input
         type="text"

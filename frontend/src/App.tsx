@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ActivityBar } from './components/ActivityBar';
 import { Editor } from './components/Editor';
 import { Toolbar } from './components/Toolbar';
@@ -11,14 +12,13 @@ import { ExtensionsView } from './components/views/ExtensionsView';
 import { SettingsView } from './components/views/SettingsView';
 import { ProfileView } from './components/views/ProfileView';
 import { FileExplorer } from './components/FileExplorer';
+import { SignUp } from './components/auth/SignUp';
 import { useEditorStore } from './store/editorStore';
+import { Login } from './components/auth/Login';
+import { Home } from './components/Home';
 
-function App() {
-  const { isAIPanelOpen, initializeDefaultFile, currentView } = useEditorStore();
-  
-  React.useEffect(() => {
-    initializeDefaultFile();
-  }, []);
+const Layout = () => {
+  const { isAIPanelOpen, currentView } = useEditorStore();
 
   const renderSidePanel = () => {
     switch (currentView) {
@@ -65,6 +65,27 @@ function App() {
       </div>
       <StatusBar />
     </div>
+  );
+};
+
+function App() {
+  const { isAuthenticated, initializeDefaultFile } = useEditorStore();
+  
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      initializeDefaultFile();
+    }
+  }, [isAuthenticated]);
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/home" element={<Home />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/*" element={<Layout />} />
+      </Routes>
+    </Router>
   );
 }
 

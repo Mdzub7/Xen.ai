@@ -13,7 +13,16 @@ import { ProfileView } from './views/ProfileView';
 import { Toolbar } from './Toolbar';
 
 const Layout: React.FC = () => {
-  const { isAIPanelOpen, currentView } = useEditorStore();
+  const { isAIPanelOpen, toggleAIPanel, currentView } = useEditorStore();
+
+  React.useEffect(() => {
+    // Ensure AI Panel is open on initial load
+    if (!isAIPanelOpen) {
+      setTimeout(() => {
+        toggleAIPanel();
+      }, 100);
+    }
+  }, []);
 
   const renderSidePanel = () => {
     switch (currentView) {
@@ -53,7 +62,7 @@ const Layout: React.FC = () => {
         <div className="flex-grow h-[70vh] overflow-hidden bg-[#0d1117]">
           <Editor />
         </div>
-        <div className="h-[30vh] border-t border-[#30363d] bg-[#161b22]">
+        <div className="h-[30vh] border-t border-black bg-black/40">
           <Terminal />
         </div>
       </div>

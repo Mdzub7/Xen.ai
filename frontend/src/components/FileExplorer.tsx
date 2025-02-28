@@ -69,28 +69,32 @@ export const FileExplorer: React.FC = () => {
   const handleNewFileClick = () => {
     setIsCreatingFile(true);
     setIsCreatingFolder(false);
-    // If a folder is selected and expanded, the new file will be created inside it
+  };
+
+  const handleNewFolderClick = () => {
+    setIsCreatingFolder(true);
+    setIsCreatingFile(false);
   };
 
   return (
-    <div className="h-full bg-[#0d1117] text-[#e6edf3] overflow-y-auto">
-      <div className="p-4 border-b border-[#30363d] bg-[#161b22]">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium">Explorer</h2>
-          <div className="flex space-x-2">
+    <div className="h-full bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white overflow-y-auto">
+      <div className="p-2 border-b border-white/10 bg-gradient-to-r from-black/40 to-black/20">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xs font-medium">Explorer</h2>
+          <div className="flex space-x-1">
             <button
-              className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
+              className="p-1 hover:bg-black/30 rounded text-white/70 hover:text-white"
               title="New File"
               onClick={handleNewFileClick}
             >
-              <FilePlus size={16} />
+              <FilePlus size={14} className="text-white" />
             </button>
             <button
-              className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
+              className="p-1 hover:bg-black/30 rounded text-white/70 hover:text-white"
               title="New Folder"
-              onClick={() => setIsCreatingFolder(true)}
+              onClick={handleNewFolderClick}
             >
-              <FolderPlus size={16} />
+              <FolderPlus size={14} className="text-white" />
             </button>
           </div>
         </div>

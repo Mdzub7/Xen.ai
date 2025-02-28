@@ -83,7 +83,7 @@ export const Toolbar: React.FC = () => {
   };
 
   return (
-    <div className="h-12 bg-[#161b22] border-b border-[#30363d] flex items-center px-4 space-x-2">
+    <div className="h-12 bg-gradient-to-r from-[#0A192F] via-[#0F1A2B] to-black border-b border-white/10 flex items-center px-4 space-x-2">
       <button
         className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}

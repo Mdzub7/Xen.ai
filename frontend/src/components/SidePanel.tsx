@@ -8,7 +8,7 @@ import { SettingsView } from './views/SettingsView';
 import { ProfileView } from './views/ProfileView';
 
 export const SidePanel: React.FC = () => {
-  const { currentView } = useEditorStore();
+  const { currentView, currentFile } = useEditorStore();
 
   const renderView = () => {
     switch (currentView) {
@@ -32,7 +32,7 @@ export const SidePanel: React.FC = () => {
   };
 
   return currentView !== 'none' ? (
-    <div className="w-64">
+    <div className={`w-64 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-r border-white/10 ${!currentFile ? 'hidden md:block' : ''}`}>
       {renderView()}
     </div>
   ) : null;

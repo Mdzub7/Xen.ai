@@ -31,7 +31,7 @@ export const ActivityBar: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#161b22] text-[#7d8590]">
+    <div className="h-full flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white/70">
       <div className="flex-1 flex flex-col items-center py-2 space-y-4">
         <button
           className={`p-2 rounded hover:bg-[#21262d] hover:text-[#e6edf3] ${

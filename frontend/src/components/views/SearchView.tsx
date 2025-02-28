@@ -27,7 +27,7 @@ export const SearchView: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-[#0d1117] text-[#e6edf3] p-4 overflow-y-auto">
+    <div className="h-full bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white p-4 overflow-y-auto">
       <h2 className="text-sm font-medium text-[#e6edf3] mb-4">Search</h2>
       <div className="flex space-x-2 mb-4">
         <input

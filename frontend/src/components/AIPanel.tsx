@@ -245,12 +245,12 @@ export const AIPanel: React.FC = () => {
   };
 
   return (
-    <div className="fixed right-0 top-0 h-[97.3vh] w-[30vw] flex flex-col bg-[#0d1117] border-l border-[#30363d] shadow-lg z-50">
-      {/* Header with tabs and close button */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#30363d] bg-[#161b22]">
+    <div className="fixed right-0 top-0 h-[97.3vh] w-[30vw] flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-l border-white/10 shadow-lg z-50">
+      {/* Header with horizontal gradient */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-black/20 to-black">
         <div className="flex items-center gap-4">
-          <span className="text-[#e6edf3] font-medium">Chat</span>
-          <span className="text-[#7d8590]">Builder <span className="text-xs px-1.5 py-0.5 rounded bg-[#30363d]">Beta</span></span>
+          <span className="text-white font-medium">Chat</span>
+          <span className="text-white/70">Builder <span className="text-xs px-1.5 py-0.5 rounded bg-black/20">Beta</span></span>
         </div>
         <div className="flex items-center gap-2">
           <button className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]">
@@ -321,7 +321,7 @@ export const AIPanel: React.FC = () => {
       )}
         
       {/* Input area with model selection dropdown */}
-      <div className="p-4 border-t border-[#30363d] bg-[#161b22]">
+      <div className="p-4 border-t border-white/10 bg-black/20">
         <div className="flex items-center gap-2">
           <textarea
             value={input}
@@ -337,8 +337,8 @@ export const AIPanel: React.FC = () => {
               }
             }}
             placeholder="Ask the AI assistant..."
-            className="flex-1 bg-[#0d1117] text-[#e6edf3] rounded-lg px-4 py-3 text-sm focus:outline-none 
-              border border-[#30363d] focus:border-[#4f8cc9] resize-none min-h-[44px] max-h-[150px] overflow-y-auto"
+            className="flex-1 bg-black/40 text-white rounded-lg px-4 py-3 text-sm focus:outline-none 
+              border border-white/10 focus:border-[#4f8cc9] resize-none min-h-[44px] max-h-[150px] overflow-y-auto"
             disabled={isLoading}
             rows={1}
           />
@@ -346,7 +346,7 @@ export const AIPanel: React.FC = () => {
           <div className="flex items-center gap-2 shrink-0">
             <div className="relative group">
               <button 
-                className="px-3 py-2 rounded bg-[#21262d] text-[#e6edf3] hover:bg-[#30363d] transition-colors duration-200 text-sm font-medium"
+                className="px-3 py-2 rounded bg-black/40 text-white hover:bg-gradient-to-r hover:from-[#0A192F] hover:to-[#0F1A2B] transition-colors duration-200 text-sm font-medium"
               >
                 {selectedModel === 'gemini' ? 'Gemini' : 
                  selectedModel === 'deepseek' ? 'DeepSeek' : 'Qwen'}
@@ -388,7 +388,7 @@ export const AIPanel: React.FC = () => {
             
             <button
               onClick={handleSendMessage}
-              className="px-3 py-2 rounded bg-[#21262d] text-[#7d8590] hover:bg-[#30363d] disabled:opacity-50"
+              className="px-3 py-2 rounded bg-black/40 text-white/70 hover:bg-black/60 disabled:opacity-50"
               disabled={isLoading}
             >
               <Send size={16} />

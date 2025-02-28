@@ -3,7 +3,7 @@ import { User, Mail, Github, Globe, MapPin } from 'lucide-react';
 
 export const ProfileView: React.FC = () => {
   return (
-    <div className="h-full bg-[#0d1117] text-[#e6edf3] p-4">
+    <div className="h-full bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white p-4">
       <h2 className="text-sm font-medium text-[#e6edf3] mb-4">Profile</h2>
       
       <div className="space-y-6">
@@ -37,7 +37,9 @@ export const ProfileView: React.FC = () => {
         </div>
 
         <div className="pt-4 border-t border-[#30363d]">
-          <button className="w-full bg-[#238636] hover:bg-[#2ea043] text-sm py-2 rounded-md text-[#e6edf3] transition-colors">
+          <button 
+            className="w-full bg-black/40 text-white font-medium p-3 rounded-lg hover:bg-black/60 transition-colors"
+          >
             Edit Profile
           </button>
         </div>

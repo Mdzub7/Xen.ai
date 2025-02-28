@@ -73,8 +73,8 @@ export const Terminal: React.FC = () => {
   };
 
   return isVisible ? (
-    <div className="h-full flex flex-col bg-[#0d1117]">
-      <div className="flex items-center justify-between px-4 py-1 bg-[#161b22] border-b border-[#30363d]">
+    <div className="h-full flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
+      <div className="flex items-center justify-between px-4 py-1 bg-black/20 border-b border-white/10">
         <div className="flex items-center space-x-2">
           <TerminalIcon size={14} className="text-[#7d8590]" />
           <span className="text-sm text-[#e6edf3]">Terminal</span>

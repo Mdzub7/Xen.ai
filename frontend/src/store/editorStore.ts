@@ -11,6 +11,14 @@ interface EditorState {
   terminalCommands: string[];
   terminalHistory: TerminalEntry[];
   selectedModel: AIModel;
+  isAuthenticated: boolean;
+  user: UserData | null;
+}
+
+interface UserData {
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -108,6 +116,9 @@ type EditorStateWithMethods = EditorState & {
   initializeDefaultFile: () => void;
   updateFileLanguage: (fileId: string, language: string) => void;
   setSelectedModel: (model: AIModel) => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (userData: { firstName: string; lastName: string; email: string; password: string }) => Promise<void>;
+  logout: () => void;
 };
 
 const isAIView = (view: View): boolean => ['ai', 'debug'].includes(view);
@@ -123,6 +134,75 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   terminalCommands: [],
   terminalHistory: [],
   selectedModel: 'gemini',
+  isAuthenticated: false,  // Add this
+  user: null,             // Add this
+
+  // Authentication methods
+  login: async (email: string, password: string) => {
+    try {
+      const response = await fetch('http://localhost:8000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const userData = await response.json();
+      set(state => ({ 
+        ...state, 
+        isAuthenticated: true,
+        user: userData
+      }));
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  },
+
+  signup: async (userData: { firstName: string; lastName: string; email: string; password: string }) => {
+    try {
+      const response = await fetch('http://localhost:8000/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Signup failed');
+      }
+
+      const user = await response.json();
+      set(state => ({ 
+        ...state, 
+        isAuthenticated: true,
+        user: {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email
+        }
+      }));
+    } catch (error) {
+      console.error('Signup failed:', error);
+      throw error;
+    }
+  },
+
+  logout: () => {
+    set(state => ({ 
+      ...state, 
+      isAuthenticated: false,
+      user: null,
+      currentFile: null,
+      files: [],
+      folders: [],
+      messages: [],
+      isAIPanelOpen: false,
+      currentView: 'explorer'
+    }));
+  },
 
   // Add model setter
   setSelectedModel: (model: AIModel) => set((state) => ({

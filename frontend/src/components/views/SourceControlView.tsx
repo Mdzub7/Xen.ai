@@ -3,7 +3,7 @@ import { GitBranch, Plus, Check } from 'lucide-react';
 
 export const SourceControlView: React.FC = () => {
   return (
-    <div className="h-full bg-[#0d1117] text-[#e6edf3] p-4">
+    <div className="h-full bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white p-4">
       <h2 className="text-sm font-medium text-[#e6edf3] mb-4">Source Control</h2>
       <div className="flex items-center space-x-2 mb-4">
         <GitBranch size={16} className="text-[#7d8590]" />
