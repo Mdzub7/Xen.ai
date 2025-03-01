@@ -11,7 +11,7 @@ import '../styles/codeBlock.css';
 import rehypeRaw from 'rehype-raw';
 import { LoadingSpinner } from './LoadingSpinner';
 import '../styles/loadingSpinner.css';
-
+import { getFirebaseToken } from '../auth/firebaseToken'; 
 
 interface Section {
   type: 'code' | 'text';
@@ -73,6 +73,10 @@ export const AIPanel: React.FC = () => {
   };
 
   const handleSendMessage = async () => {
+    const token = await getFirebaseToken();
+    if (!token) {
+        throw new Error("User not authenticated");
+    }
     if (!input.trim()) return;
     setIsLoading(true);
 
@@ -90,6 +94,8 @@ export const AIPanel: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization':`Bearer ${token}`
+
         },
         body: JSON.stringify({ 
           code: input,

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import type { Message } from '../types';
+import { getFirebaseToken } from "../auth/firebaseToken";
 
 export const Toolbar: React.FC = () => {
   const { 
@@ -49,10 +50,15 @@ export const Toolbar: React.FC = () => {
     });
   
     try {
+      const token = await getFirebaseToken(); // 🔹 Fetch Firebase Token
+      if (!token) {
+        throw new Error("No Firebase token available.");
+      }
       const response = await fetch('http://127.0.0.1:8000/ai/get-review', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ 
           code: currentFile.content,

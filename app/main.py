@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routes import ai,judge0_route
+from .routes import ai,judge0_route,auth_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -27,3 +27,4 @@ app.add_middleware(
 
 app.include_router(ai.router, prefix="/ai", tags=["AI Review"])
 app.include_router(judge0_route.router, prefix="/api", tags=["Compiler"])
+app.include_router(auth_router.auth_router, prefix="/auth")

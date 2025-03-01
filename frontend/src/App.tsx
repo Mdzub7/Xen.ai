@@ -80,10 +80,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/*" element={<Layout />} />
+        <Route path="/v1/*" element={<Layout />} />
       </Routes>
     </Router>
   );

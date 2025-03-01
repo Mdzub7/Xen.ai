@@ -81,7 +81,7 @@ export const Home: React.FC = () => {
                   Sign Up
                 </Link>
                 <Link 
-                  to="/"
+                  to="/v1/"
                   className="block w-full bg-gradient-to-r from-[#0F172A] to-[#1E293B] text-white font-medium p-4 rounded-lg hover:from-[#1E293B] hover:to-[#2D3748] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Open Editor

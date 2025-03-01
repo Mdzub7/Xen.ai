@@ -24,3 +24,7 @@ Thumbs.db
 .env
 docker-compose.override.yml
 .env
+
+
+firebase
+xenai-auth-firebase-adminsdk-fbsvc-6b8fb5a521.json

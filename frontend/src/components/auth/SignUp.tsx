@@ -1,19 +1,46 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useEditorStore } from '../../store/editorStore';
-import logo from '../../assets/logo.png';  // Add this import
+import { Link,useNavigate } from 'react-router-dom';
+import { auth, googleProvider, githubProvider } from '../auth/firebase';
+//import { useEditorStore } from '../../store/editorStore';
+import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
+import logo from '../../logo.png';  // Add this import
 
 export const SignUp: React.FC = () => {
+
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
+    setError('');
+
+    try {
+      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      navigate('/dashboard');  // Redirect to dashboard after signup
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
+
+  const handleOAuthSignIn = async (provider: any) => {
+    try {
+      await signInWithPopup(auth, provider);
+      navigate('/dashboard');  // Redirect to dashboard after OAuth login
+    } catch (error: any) {
+      setError(error.message);
+    }
   };
 
   return (
