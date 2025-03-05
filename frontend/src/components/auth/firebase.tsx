@@ -9,6 +9,8 @@ import {
   signOut,
   UserCredential
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Validate env variables
 const requiredEnvVars = [
@@ -40,6 +42,8 @@ export const auth = getAuth(app);
 
 export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // Email & Password Login
 export const loginWithEmail = async (email: string, password: string): Promise<UserCredential> => {

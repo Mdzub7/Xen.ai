@@ -74,6 +74,7 @@ export const AIPanel: React.FC = () => {
 
   const handleSendMessage = async () => {
     const token = await getFirebaseToken();
+    console.log('token is',token)
     if (!token) {
         throw new Error("User not authenticated");
     }
