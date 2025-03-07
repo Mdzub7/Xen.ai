@@ -6,8 +6,6 @@ import { AIPanel } from './AIPanel';
 import { ActivityBar } from './ActivityBar';
 import { useEditorStore } from '../store/editorStore';
 import { SearchView } from './views/SearchView';
-import { SourceControlView } from './views/SourceControlView';
-import { ExtensionsView } from './views/ExtensionsView';
 import { SettingsView } from './views/SettingsView';
 import { ProfileView } from './views/ProfileView';
 import { Toolbar } from './Toolbar';
@@ -30,10 +28,6 @@ const Layout: React.FC = () => {
         return <FileExplorer />;
       case 'search':
         return <SearchView />;
-      case 'sourceControl':
-        return <SourceControlView />;
-      case 'extensions':
-        return <ExtensionsView />;
       case 'settings':
         return <SettingsView />;
       case 'profile':

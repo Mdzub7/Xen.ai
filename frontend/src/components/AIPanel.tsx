@@ -3,7 +3,7 @@ import { X, Send } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import { Message } from '../types';
 import { CodeBlock } from './CodeBlock';
-import { formatAIResponse, parseResponse } from '../utils/formatResponse';
+import { formatAIResponse} from '../utils/formatResponse';
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import Markdown from 'react-markdown';
@@ -22,7 +22,7 @@ interface Section {
 
 // Add a close button to the top of the panel
 export const AIPanel: React.FC = () => {
-  const { isAIPanelOpen, toggleAIPanel, messages, addMessage, selectedModel, setSelectedModel } = useEditorStore();
+  const { isAIPanelOpen, toggleAIPanel, messages, addMessage, selectedModel, setSelectedModel, isReviewLoading, setIsReviewLoading } = useEditorStore();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -256,16 +256,10 @@ export const AIPanel: React.FC = () => {
       {/* Header with horizontal gradient */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-black/20 to-black">
         <div className="flex items-center gap-4">
-          <span className="text-white font-medium">Chat</span>
-          <span className="text-white/70">Builder <span className="text-xs px-1.5 py-0.5 rounded bg-black/20">Beta</span></span>
+          <span className="text-white-700 font-medium">Chat Builder</span>
+          <span className="text-blue-300 rounded-full bg-grey px-2 py-1 text-xs font-medium shadow-sm">Beta</span>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"></path></svg>
-          </button>
-          <button className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16Zm3.78-9.72a.751.751 0 0 0-.018-1.042.751.751 0 0 0-1.042-.018L6.75 9.19 5.28 7.72a.751.751 0 0 0-1.042.018.751.751 0 0 0-.018 1.042l2 2a.75.75 0 0 0 1.06 0Z"></path></svg>
-          </button>
+        <div className="flex items-center gap-2"> 
           <button 
             onClick={toggleAIPanel}
             className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]"
@@ -277,12 +271,19 @@ export const AIPanel: React.FC = () => {
       </div>
 
       {/* Empty state - centered content */}
-      {messages.length === 0 && (
+      {messages.length === 0 && !isLoading && !isReviewLoading && (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <h1 className="text-2xl font-semibold text-[#e6edf3] mb-2">Xen.ai Mode</h1>
           <p className="text-[#7d8590] text-sm max-w-md">
             Feel free to ask questions or seek advice about your codebase or coding in general.
           </p>
+        </div>
+      )}
+
+      {/* Center the loading spinner when there are no messages */}
+      {messages.length === 0 && (isLoading || isReviewLoading) && (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <LoadingSpinner />
         </div>
       )}
 
@@ -308,21 +309,7 @@ export const AIPanel: React.FC = () => {
               </div>
             </div>
           ))}
-          {isLoading && (
-            <div className="flex justify-start mb-6">
-              <div className="mr-auto bg-[#161b22] rounded-lg p-6 max-w-[90%] shadow-md">
-                <div className="flex items-center space-x-3">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#4f8cc9] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                    <div className="w-2 h-2 bg-[#4f8cc9] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                    <div className="w-2 h-2 bg-[#4f8cc9] rounded-full animate-bounce"></div>
-                  </div>
-                  <span className="text-[#7d8590]">AI is thinking...</span>
-                </div>
-              </div>
-            </div>
-          )}
-          {isLoading && <LoadingSpinner />}
+          {(isLoading || isReviewLoading) && <LoadingSpinner />}
           <div ref={messagesEndRef} />
         </div>
       )}
@@ -346,7 +333,7 @@ export const AIPanel: React.FC = () => {
             placeholder="Ask the AI assistant..."
             className="flex-1 bg-black/40 text-white rounded-lg px-4 py-3 text-sm focus:outline-none 
               border border-white/10 focus:border-[#4f8cc9] resize-none min-h-[44px] max-h-[150px] overflow-y-auto"
-            disabled={isLoading}
+            disabled={isLoading || isReviewLoading}
             rows={1}
           />
           
@@ -396,7 +383,7 @@ export const AIPanel: React.FC = () => {
             <button
               onClick={handleSendMessage}
               className="px-3 py-2 rounded bg-black/40 text-white/70 hover:bg-black/60 disabled:opacity-50"
-              disabled={isLoading}
+              disabled={isLoading || isReviewLoading}
             >
               <Send size={16} />
             </button>

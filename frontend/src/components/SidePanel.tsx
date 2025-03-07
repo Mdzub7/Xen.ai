@@ -2,8 +2,6 @@ import React from 'react';
 import { useEditorStore } from '../store/editorStore';
 import { FileExplorer } from './FileExplorer';
 import { SearchView } from './views/SearchView';
-import { SourceControlView } from './views/SourceControlView';
-import { ExtensionsView } from './views/ExtensionsView';
 import { SettingsView } from './views/SettingsView';
 import { ProfileView } from './views/ProfileView';
 
@@ -16,10 +14,6 @@ export const SidePanel: React.FC = () => {
         return <FileExplorer />;
       case 'search':
         return <SearchView />;
-      case 'sourceControl':
-        return <SourceControlView />;
-      case 'extensions':
-        return <ExtensionsView />;
       case 'settings':
         return <SettingsView />;
       case 'profile':

@@ -12,6 +12,7 @@ import {
 import { useEditorStore } from '../store/editorStore';
 import type { Message } from '../types';
 import { getFirebaseToken } from "../auth/firebaseToken";
+import { formatAIResponse} from '../utils/formatResponse';
 
 export const Toolbar: React.FC = () => {
   const { 
@@ -22,7 +23,8 @@ export const Toolbar: React.FC = () => {
     runCode, 
     isAIPanelOpen,
     setCurrentView,
-    addMessage 
+    addMessage ,
+    setIsReviewLoading
   } = useEditorStore();
 
   const handleCopyCode = () => {
@@ -30,6 +32,7 @@ export const Toolbar: React.FC = () => {
       navigator.clipboard.writeText(currentFile.content);
     }
   };
+
 
   const handleDebug = () => {
     setCurrentView('debug');
@@ -48,6 +51,8 @@ export const Toolbar: React.FC = () => {
       content: `Please review this code:\n\n${currentFile.content}`,
       timestamp: new Date().toISOString()
     });
+
+    setIsReviewLoading(true);
   
     try {
       const token = await getFirebaseToken(); // 🔹 Fetch Firebase Token
@@ -71,10 +76,12 @@ export const Toolbar: React.FC = () => {
       }
   
       const aiResponse = await response.text();
+      const formattedResponse = formatAIResponse(aiResponse);
+      console.log(formattedResponse)
       addMessage({
         id: Math.random().toString(36).substr(2, 9),
         role: 'assistant',
-        content: aiResponse,
+        content: formattedResponse,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
@@ -85,6 +92,9 @@ export const Toolbar: React.FC = () => {
         content: 'Sorry, I encountered an error while processing your request.',
         timestamp: new Date().toISOString(),
       });
+    }
+    finally{
+      setIsReviewLoading(false);
     }
   };
 

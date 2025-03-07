@@ -14,6 +14,8 @@ interface EditorState {
   selectedModel: AIModel;
   isAuthenticated: boolean;
   user: UserData | null;
+  isReviewLoading:boolean;
+  
 }
 
 interface UserData {
@@ -97,6 +99,7 @@ type EditorStateWithMethods = EditorState & {
   login: (email: string, password: string) => Promise<void>;
   signup: (userData: { firstName: string; lastName: string; email: string; password: string }) => Promise<void>;
   logout: () => void;
+  setIsReviewLoading: (isLoading: boolean) => void;
 };
 
 const isAIView = (view: View): boolean => ['ai', 'debug'].includes(view);
@@ -114,6 +117,8 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   selectedModel: 'gemini',
   isAuthenticated: false,
   user: null,
+  isReviewLoading: false,
+  setIsReviewLoading: (isLoading) => set({ isReviewLoading: isLoading }),
 
   // Authentication methods
   login: async (email: string, password: string) => {

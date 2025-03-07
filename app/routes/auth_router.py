@@ -23,7 +23,6 @@ def get_current_user(cred: HTTPAuthorizationCredentials = Security(security)):
     except auth.RevokedIdTokenError:
         raise HTTPException(status_code=401, detail="Token has been revoked. Please log in again.")
     except Exception as e:
-        print(f"Token Verification Error: {e}")  # Debugging line
         raise HTTPException(status_code=401, detail="Authentication failed.")
 
 @auth_router.get("/protected")

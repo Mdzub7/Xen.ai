@@ -1,29 +1,12 @@
-/**
- * languageBoilerplates.ts
- * Collection of code templates for different programming languages
- *
- * @author
- * @date 2025-03-07
- */
 
-/**
- * Generates boilerplate code for various programming languages
- * @param language - The programming language
- * @param fileName - The name of the file
- * @returns Template code for the specified language
- */
 export const getLanguageBoilerplate = (language: string, fileName: string = 'Untitled'): string => {
     const className = fileName.split('.')[0];
     const normalizedClassName = className.charAt(0).toUpperCase() + className.slice(1); // Capitalize first letter
     
     const boilerplates: { [key: string]: string } = {
-      python: `#!/usr/bin/env python3
-  # -*- coding: utf-8 -*-
+      python: `
   """
   ${fileName}
-  Description: 
-  
-  Author: 
   Date: ${new Date().toISOString().split('T')[0]}
   """
   
@@ -36,9 +19,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   
       javascript: `/**
    * ${fileName}
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   
@@ -52,9 +32,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   
       typescript: `/**
    * ${fileName}
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   
@@ -75,9 +52,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   
       java: `/**
    * ${normalizedClassName} class
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   public class ${normalizedClassName} {
@@ -89,9 +63,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   
       c: `/**
    * ${fileName}
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   #include <stdio.h>
@@ -102,11 +73,8 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   }
   `,
   
-      cpp: `/**
+      "c++": `/**
    * ${fileName}
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   #include <iostream>
@@ -120,9 +88,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   
       csharp: `/**
    * ${normalizedClassName} class
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   using System;
@@ -139,11 +104,8 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   }
   `,
   
-      ruby: `#!/usr/bin/env ruby
+      ruby: `#
   # ${fileName}
-  # Description: 
-  #
-  # @author 
   # @date ${new Date().toISOString().split('T')[0]}
   
   def main
@@ -155,9 +117,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   
       go: `/**
    * ${fileName}
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   package main
@@ -169,12 +128,9 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   }
   `,
   
-      php: `<?php
+      php: `
   /**
    * ${fileName}
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   
@@ -187,9 +143,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
   
       rust: `/**
    * ${fileName}
-   * Description: 
-   *
-   * @author 
    * @date ${new Date().toISOString().split('T')[0]}
    */
   fn main() {
@@ -231,56 +184,6 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
       </script>
   </body>
   </html>
-  `,
-  
-      css: `/**
-   * ${fileName}
-   * Stylesheet for: 
-   *
-   * @author 
-   * @date ${new Date().toISOString().split('T')[0]}
-   */
-  
-  /* Reset and base styles */
-  * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-  }
-  
-  body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      background-color: #f4f4f4;
-  }
-  
-  .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 20px;
-  }
-  
-  /* Header styles */
-  header {
-      background-color: #333;
-      color: #fff;
-      padding: 20px 0;
-  }
-  
-  /* Main content styles */
-  main {
-      padding: 20px 0;
-  }
-  
-  /* Footer styles */
-  footer {
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      padding: 20px 0;
-      margin-top: 40px;
-  }
   `,
   
       json: `{
@@ -439,16 +342,13 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
     '.js': 'javascript',
     '.java': 'java',
     '.c': 'c',
-    '.cpp': 'cpp',
+    '.cpp': 'c++',
     '.ts': 'typescript',
     '.rb': 'ruby',
     '.go': 'go',
     '.php': 'php',
     '.rs': 'rust',
     '.cs': 'csharp',
-    '.html': 'html',
-    '.css': 'css',
-    '.json': 'json',
     '.txt': 'plaintext',
     '.scala': 'scala',
     '.kt': 'kotlin',

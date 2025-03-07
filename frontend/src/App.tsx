@@ -7,8 +7,6 @@ import { AIPanel } from './components/AIPanel';
 import { Terminal } from './components/Terminal';
 import { StatusBar } from './components/StatusBar';
 import { SearchView } from './components/views/SearchView';
-import { SourceControlView } from './components/views/SourceControlView';
-import { ExtensionsView } from './components/views/ExtensionsView';
 import { SettingsView } from './components/views/SettingsView';
 import { ProfileView } from './components/views/ProfileView';
 import { FileExplorer } from './components/FileExplorer';
@@ -26,10 +24,6 @@ const Layout = () => {
         return <FileExplorer />;
       case 'search':
         return <SearchView />;
-      case 'sourceControl':
-        return <SourceControlView />;
-      case 'extensions':
-        return <ExtensionsView />;
       case 'settings':
         return <SettingsView />;
       case 'profile':

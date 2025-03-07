@@ -2,8 +2,6 @@ import React from 'react';
 import {
   Files,
   Search,
-  GitBranch,
-  Box,
   Settings,
   UserCircle,
   Bot,  // Add Bot import
@@ -60,24 +58,7 @@ export const ActivityBar: React.FC = () => {
         >
           <Search size={24} className="text-gray-400" />
         </button>
-        <button
-          className={`p-2 hover:bg-[#3c3c3c] rounded mb-2 ${
-            currentView === 'sourceControl' ? 'bg-[#37373d]' : ''
-          }`}
-          onClick={() => handleViewChange('sourceControl')}
-          title="Source Control"
-        >
-          <GitBranch size={24} className="text-gray-400" />
-        </button>
-        <button
-          className={`p-2 hover:bg-[#3c3c3c] rounded mb-2 ${
-            currentView === 'extensions' ? 'bg-[#37373d]' : ''
-          }`}
-          onClick={() => handleViewChange('extensions')}
-          title="Extensions"
-        >
-          <Box size={24} className="text-gray-400" />
-        </button>
+        
         <div className="flex-1" />  {/* This creates space between top and bottom buttons */}
         <button
           className={`p-2 hover:bg-[#3c3c3c] rounded mb-2 ${
