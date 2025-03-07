@@ -100,6 +100,8 @@ type EditorStateWithMethods = EditorState & {
   signup: (userData: { firstName: string; lastName: string; email: string; password: string }) => Promise<void>;
   logout: () => void;
   setIsReviewLoading: (isLoading: boolean) => void;
+  clearTerminalHistory: () => void;
+  setTerminalHistory: (history: TerminalEntry[]) => void; // Add this line
 };
 
 const isAIView = (view: View): boolean => ['ai', 'debug'].includes(view);
@@ -120,6 +122,7 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   isReviewLoading: false,
   setIsReviewLoading: (isLoading) => set({ isReviewLoading: isLoading }),
 
+  
   // Authentication methods
   login: async (email: string, password: string) => {
     try {
@@ -192,6 +195,8 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
     ...state,
     selectedModel: model
   })),
+
+  clearTerminalHistory: () => set({ terminalHistory: [] }),
 
   // Single implementation of addMessage with model information
   addMessage: (message: Message) => set((state) => ({
@@ -292,6 +297,11 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
     terminalHistory: [...state.terminalHistory, entry],
   })),
 
+  setTerminalHistory: (history: any) => set(() => ({
+    terminalHistory: history,
+  })),
+
+  
   formatCode: () => {
     const { currentFile } = get();
     if (!currentFile) return;

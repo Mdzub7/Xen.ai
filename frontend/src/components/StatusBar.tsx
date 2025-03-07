@@ -16,10 +16,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({ activeFile }) => {
 
   const currentFile = useEditorStore((state) => state.currentFile);
 
-  
-  useEffect(() => {
-    console.log("Active File:", activeFile); // 🔹 Debugging Output
-  }, [activeFile]);
+
 
   useEffect(() => {
     // Update time every second
