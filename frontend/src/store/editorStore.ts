@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { File, Folder, Message, View } from '../types';
+import { getLanguageBoilerplate, extensionToLanguage, getFileExtension } from './boilerplate';
 
 interface EditorState {
   currentFile: File | null;
@@ -42,53 +43,30 @@ const getLanguageId = (language: string): number => {
     csharp: 51,      // C#
     plaintext: 71,   // Default to Python for plaintext
     txt: 71,         // Default to Python for .txt files
+    scala: 81,       // Added Scala
+    kotlin: 78,      // Added Kotlin
+    swift: 83,       // Added Swift
+    dart: 55,        // Added Dart
+    lua: 64,         // Added Lua
+    perl: 67,        // Added Perl
+    r: 70,           // Added R
+    haskell: 61,     // Added Haskell
   };
   
   console.log(`Getting language ID for: "${normalizedLanguage}"`);
   return languageMap[normalizedLanguage] || 71; // Default to Python if unknown
 };
 
-// Map file extensions to language names
-const extensionToLanguage: { [key: string]: string } = {
-  '.py': 'python',
-  '.js': 'javascript',
-  '.java': 'java',
-  '.c': 'c',
-  '.cpp': 'cpp',
-  '.ts': 'typescript',
-  '.rb': 'ruby',
-  '.go': 'go',
-  '.php': 'php',
-  '.rs': 'rust',
-  '.cs': 'csharp',
-  '.html': 'html',
-  '.css': 'css',
-  '.json': 'json',
-  '.txt': 'plaintext',
-};
 
-// Improved file extension detection
-const getFileExtension = (content: string): string => {
-  // Content-based detection
-  if (content.includes('class') && (content.includes('public static void main') || content.includes('extends'))) return '.java';
-  if (content.includes('def ') || content.includes('import ') && !content.includes('from \'react\'')) return '.py';
-  if (content.includes('function') || content.includes('const ') || content.includes('let ')) return '.js';
-  if (content.includes('interface') || content.includes('type ') || (content.includes('import') && content.includes('from'))) return '.ts';
-  if (content.includes('<div') && content.includes('import React')) return '.tsx';
-  if (content.includes('<!DOCTYPE') || content.includes('<html')) return '.html';
-  if (content.includes('body {') || content.includes('@media')) return '.css';
-  if (content.includes('{') && content.includes(':') && content.includes('"')) return '.json';
-  
-  return '.txt';
-};
 
+
+const defaultContent="Default";
 // Get language from file extension
 const getLanguageFromExtension = (fileName: string): string => {
   const ext = '.' + fileName.split('.').pop();
   return extensionToLanguage[ext] || 'plaintext';
 };
 
-const defaultContent = `// Welcome to the Code Editor\n// Start coding or open a file to begin`;
 
 type TerminalEntry = {
   command: string;
@@ -134,8 +112,8 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   terminalCommands: [],
   terminalHistory: [],
   selectedModel: 'gemini',
-  isAuthenticated: false,  // Add this
-  user: null,             // Add this
+  isAuthenticated: false,
+  user: null,
 
   // Authentication methods
   login: async (email: string, password: string) => {
@@ -273,14 +251,22 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
     }
     
     // Ensure file has correct extension based on language
-    const fileExt = name.includes('.') ? `.${name.split('.').pop()}` : '';
-    const fileName = name.includes('.') ? name : `${name}.${detectedLanguage}`;
+    let fileName = name;
+    if (!fileName.includes('.')) {
+      // Get the appropriate extension for the language
+      const languageToExt = Object.entries(extensionToLanguage).find(([_, lang]) => lang === detectedLanguage.toLowerCase());
+      const defaultExt = languageToExt ? languageToExt[0] : '.txt';
+      fileName = `${name}${defaultExt}`;
+    }
     
-    // Create the new file with the proper language
+    // Generate boilerplate content based on language
+    const boilerplateContent = getLanguageBoilerplate(detectedLanguage.toLowerCase(), fileName);
+    
+    // Create the new file with the proper language and boilerplate
     const newFile: File = { 
       id: generateId(), 
       name: fileName, 
-      content: '', 
+      content: boilerplateContent, 
       language: detectedLanguage.toLowerCase(), 
       folderId 
     };
