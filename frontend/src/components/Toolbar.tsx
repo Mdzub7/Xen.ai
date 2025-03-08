@@ -5,22 +5,19 @@ import {
   Copy,
   Save,
   Bot,
-  Loader2,
   Bug,
   Wand2
 } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
-import type { Message } from '../types';
 import { getFirebaseToken } from "../auth/firebaseToken";
 import { formatAIResponse} from '../utils/formatResponse';
-
+import { executeCode } from "../components/Terminal";
 export const Toolbar: React.FC = () => {
   const { 
     currentFile, 
     toggleAIPanel, 
     formatCode, 
-    saveFile, 
-    runCode, 
+    saveFile,  
     isAIPanelOpen,
     setCurrentView,
     addMessage ,
@@ -103,7 +100,7 @@ export const Toolbar: React.FC = () => {
       <button
         className="p-2 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!currentFile}
-        onClick={runCode}
+        onClick={executeCode}
         title="Run Code"
       >
         <Play size={18} />

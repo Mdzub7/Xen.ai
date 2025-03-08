@@ -5,16 +5,14 @@ export const getLanguageBoilerplate = (language: string, fileName: string = 'Unt
     
     const boilerplates: { [key: string]: string } = {
       python: `
-  """
-  ${fileName}
-  Date: ${new Date().toISOString().split('T')[0]}
-  """
+  #${fileName}
+  #Date: ${new Date().toISOString().split('T')[0]}
   
-  def main():
-      print("Hello, World!")
+def main():
+    print("Hello, World!")
   
-  if __name__ == "__main__":
-      main()
+if __name__ == "__main__":
+    main()
   `,
   
       javascript: `/**

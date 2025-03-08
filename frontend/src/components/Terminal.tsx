@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play } from "lucide-react";
+import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play, Clock } from "lucide-react";
 import { useEditorStore } from "../store/editorStore";
+import { runCode } from '../utils/runJudge0';
+import ExecutionTimeWidget from "./ExecutionTimeWidget";
 
 // Define terminal commands and their descriptions for help
 const COMMANDS = {
@@ -15,14 +17,63 @@ const COMMANDS = {
   version: "Display terminal version",
 };
 
+// Function to get current time as a string - moved outside component
+function getTimeString() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+export const executeCode = async () => {
+  const currentFile = useEditorStore.getState().currentFile;
+  const addTerminalCommand = useEditorStore.getState().addTerminalCommand;
+  const setExecutionTime = useEditorStore.getState().setExecutionTime;
+
+  if (!currentFile) return "Error: No file selected.";
+
+  // Get language ID safely
+  const languageId = useEditorStore.getState().getLanguageId?.(currentFile.language) || 71;
+  const exactTime = getTimeString(); // Capture exact time
+  
+  try {
+    // Send code execution request
+    const response = await runCode(currentFile.content, languageId, "");
+    
+    if (response.success) {
+      addTerminalCommand({ 
+        command: `Output (${currentFile.language}):`, 
+        output: response.output || "[No output]",
+        timestamp: exactTime // Store exact execution time
+      });
+      const execTime=response.time ||"N/A";
+      setExecutionTime(execTime);
+    }
+  } catch (error) {
+    console.error("Execution error:", error);
+    return "Error: Failed to Compile.";
+  }
+}
+
 export const Terminal: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [currentCommand, setCurrentCommand] = useState("");
+  const [currentTime, setCurrentTime] = useState(getTimeString());
   const { terminalHistory, addTerminalCommand, setTerminalHistory } = useEditorStore();
   const terminalRef = useRef<HTMLDivElement>(null);
   const currentFile = useEditorStore((state) => state.currentFile);
   const allFiles = useEditorStore((state) => state.files);
+
+  // Update current time every second for input line only
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(getTimeString());
+    }, 1000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -34,60 +85,7 @@ export const Terminal: React.FC = () => {
     setTerminalHistory([]);
   };
 
-  const getCurrentDateTime = () => {
-    const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-  };
-
-  const executeCode = async (code: string) => {
-    try {
-      const response = await fetch("http://localhost:2358/submissions?base64_encoded=false", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source_code: code,
-          language_id: 71, // Python 3 (Change based on selected language)
-          stdin: "",
-          expected_output: "",
-          cpu_time_limit: 2,
-          memory_limit: 51200
-        }),
-      });
-
-      const { token } = await response.json();
-
-      if (!token) {
-        return "Error: No token received.";
-      }
-
-      // Poll for result
-      let result = null;
-      for (let i = 0; i < 10; i++) {
-        await new Promise((res) => setTimeout(res, 1000)); // Wait 1 second
-
-        const resultResponse = await fetch(`http://localhost:2358/submissions/${token}`);
-        const resultData = await resultResponse.json();
-
-        if (resultData.status && resultData.status.id >= 3) {
-          result = resultData;
-          break;
-        }
-      }
-
-      // Get final output
-      if (result) {
-        return result.stdout || result.stderr || "No output.";
-      } else {
-        return "Error: Timeout or no response.";
-      }
-    } catch (error) {
-      return "Error: Failed to communicate with Judge0.";
-    }
-  };
-
+  
   const processCommand = async (command: string) => {
     const args = command.split(" ");
     const cmd = args[0].toLowerCase();
@@ -107,7 +105,7 @@ export const Terminal: React.FC = () => {
         if (!currentFile) {
           return "Error: No file is open to run.";
         }
-        return await executeCode(currentFile.content);
+        return await executeCode();
 
       case "echo":
         return args.slice(1).join(" ");
@@ -122,13 +120,13 @@ export const Terminal: React.FC = () => {
         return allFiles.map(file => file.name).join("\n");
 
       case "pwd":
-        return "/workspace";
+        return "/XenAi";
 
       case "whoami":
-        return "user";
+        return "Dummy User";
 
       case "version":
-        return "Terminal v1.0.0";
+        return "Terminal v2.0.3";
 
       default:
         return `'${cmd}' is not recognized as a valid command.\nType 'help' to see available commands.`;
@@ -139,51 +137,41 @@ export const Terminal: React.FC = () => {
     if (e.key === "Enter" && currentCommand.trim()) {
       const command = currentCommand.trim();
       setCurrentCommand("");
-
-      // Add command to terminal history
-      addTerminalCommand({ command, output: "Processing..." });
-
-      // Process the command
-      const output = await processCommand(command);
       
-      // If output is null, it means we've cleared the terminal
-      if (output !== null) {
-        // Update the last command with the actual output
-        const updatedHistory = [...terminalHistory];
-        updatedHistory[updatedHistory.length - 1].output = output;
-        setTerminalHistory(updatedHistory);
-      }
+      // Capture the exact time as string when command is entered
+      const exactTime = getTimeString();
+      
+      
+      const output = await processCommand(command);
+
+      // Use the same captured time for consistency
+      addTerminalCommand({ 
+        command, 
+        output: output || "",
+        timestamp: exactTime
+      });
     }
   };
 
-  const handleRunButtonClick = async () => {
-    if (!currentFile) return;
-    
-    const command = "run";
-    addTerminalCommand({ command, output: "Running current file..." });
-    
-    const output = await executeCode(currentFile.content);
-    
-    const updatedHistory = [...terminalHistory];
-    updatedHistory[updatedHistory.length - 1].output = output;
-    setTerminalHistory(updatedHistory);
-  };
+  const processedHistory = terminalHistory.map(entry => {
+    const filePath = currentFile ? currentFile.name : "main";
+    return {
+      ...entry,
+      fullPath: `${entry.timestamp} ~/${filePath}`
+    };
+  });
 
-  return isVisible ? (
+  return (
     <div className="h-full flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
+      {/* Execution Time Widget */}
+      <ExecutionTimeWidget/>
+      
       <div className="flex items-center justify-between px-4 py-1 bg-black/20 border-b border-white/10">
         <div className="flex items-center space-x-2">
           <TerminalIcon size={14} className="text-[#7d8590]" />
           <span className="text-sm text-[#e6edf3]">Terminal</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={handleRunButtonClick}
-            className="p-1 hover:bg-[#21262d] rounded text-[#7ee787] hover:text-[#e6edf3]"
-            title="Run current file"
-          >
-            <Play size={14} />
-          </button>
+        <div className="flex items-center space-x-2"> 
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
@@ -199,14 +187,12 @@ export const Terminal: React.FC = () => {
         </div>
       </div>
       <div ref={terminalRef} className="flex-1 overflow-y-auto p-2 text-[#e6edf3] font-mono text-sm">
-        {terminalHistory.map((entry, index) => (
+        {processedHistory.map((entry, index) => (
           <div key={index} className="whitespace-pre-wrap mb-1">
             <div className="flex items-center">
               <span className="text-[#7ee787]">➜</span>
-              <span className="text-[#58a6ff] ml-2">
-                {getCurrentDateTime()} ~/
-                {currentFile ? currentFile.name : "main"}
-              </span>
+              {/* Use the pre-computed path string */}
+              <span className="text-[#58a6ff] ml-2">{entry.fullPath}</span>
               <span className="ml-2 text-[#7d8590]">$</span>
               <span className="ml-2">{entry.command}</span>
             </div>
@@ -216,7 +202,8 @@ export const Terminal: React.FC = () => {
         <div className="flex items-center mt-2">
           <span className="text-[#7ee787]">➜</span>
           <span className="text-[#58a6ff] ml-2">
-            {getCurrentDateTime()} ~/
+            {/* Use state variable for input line timestamp */}
+            {currentTime} ~/
             {currentFile ? currentFile.name : "main"}
           </span>
           <span className="ml-2 text-[#7d8590]">$</span>
@@ -231,5 +218,5 @@ export const Terminal: React.FC = () => {
         </div>
       </div>
     </div>
-  ) : null;
+  )
 };

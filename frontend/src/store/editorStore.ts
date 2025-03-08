@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { File, Folder, Message, View } from '../types';
 import { getLanguageBoilerplate, extensionToLanguage, getFileExtension } from './boilerplate';
+import { runCode } from '../utils/runJudge0';
 
 interface EditorState {
   currentFile: File | null;
@@ -15,7 +16,6 @@ interface EditorState {
   isAuthenticated: boolean;
   user: UserData | null;
   isReviewLoading:boolean;
-  
 }
 
 interface UserData {
@@ -25,6 +25,13 @@ interface UserData {
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
+const getCurrentDateTime = () => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+};
 
 // Improved language ID mapping for Judge0
 const getLanguageId = (language: string): number => {
@@ -55,15 +62,13 @@ const getLanguageId = (language: string): number => {
     haskell: 61,     // Added Haskell
   };
   
-  console.log(`Getting language ID for: "${normalizedLanguage}"`);
-  return languageMap[normalizedLanguage] || 71; // Default to Python if unknown
+  if (!(normalizedLanguage in languageMap)) {
+    console.warn(`Unknown language: "${normalizedLanguage}". Defaulting to Python.`);
+  }
+  return languageMap[normalizedLanguage] || 71;
 };
 
-
-
-
 const defaultContent="Default";
-// Get language from file extension
 const getLanguageFromExtension = (fileName: string): string => {
   const ext = '.' + fileName.split('.').pop();
   return extensionToLanguage[ext] || 'plaintext';
@@ -73,6 +78,7 @@ const getLanguageFromExtension = (fileName: string): string => {
 type TerminalEntry = {
   command: string;
   output: string;
+  timestamp: string;
 };
 
 // Add AIModel type definition
@@ -101,7 +107,10 @@ type EditorStateWithMethods = EditorState & {
   logout: () => void;
   setIsReviewLoading: (isLoading: boolean) => void;
   clearTerminalHistory: () => void;
-  setTerminalHistory: (history: TerminalEntry[]) => void; // Add this line
+  setTerminalHistory: (history: TerminalEntry[]) => void; 
+  getLanguageId: (language: string) => number;
+  executionTime: string | null;
+  setExecutionTime: (time: string | null) => void;
 };
 
 const isAIView = (view: View): boolean => ['ai', 'debug'].includes(view);
@@ -121,6 +130,9 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   user: null,
   isReviewLoading: false,
   setIsReviewLoading: (isLoading) => set({ isReviewLoading: isLoading }),
+  getLanguageId: getLanguageId,
+  executionTime: null,
+  setExecutionTime: (time) => set({ executionTime: time }),
 
   
   // Authentication methods
@@ -322,114 +334,70 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   },
 
   runCode: async () => {
-    const { currentFile, addTerminalCommand } = get();
+    const { currentFile, addTerminalCommand, updateFile, updateFileLanguage, getLanguageId } = get();
+    
     if (!currentFile) {
-      addTerminalCommand({ command: "Execution Error:", output: "No file selected." });
+      addTerminalCommand({ command: "Execution Error:", output: "No file selected.",timestamp:getCurrentDateTime() });
       return;
     }
   
-    // Determine the language from the file extension if not specified
+    // Determine the language from file extension
     const fileExtension = `.${currentFile.name.split('.').pop()}`;
-    const fileLanguage = currentFile.language || extensionToLanguage[fileExtension] || 'plaintext';
-    
-    // If language is still plaintext but we have a specific extension, try to get the language
-    let language = fileLanguage;
+    let language = currentFile.language || extensionToLanguage[fileExtension] || 'plaintext';
+  
+    // If language is still plaintext, attempt to correct it
     if (language === 'plaintext' && fileExtension !== '.txt') {
       language = extensionToLanguage[fileExtension] || 'plaintext';
-      // Update the file with the correct language
-      get().updateFileLanguage(currentFile.id, language);
+      updateFileLanguage(currentFile.id, language); // Update state
     }
-                     
-    const languageId = getLanguageId(language);
-    
-    // Add detailed debugging information
+  
+    const languageId = getLanguageId ? getLanguageId(language) : 71; // Default to Python if missing
+  
     console.log("Running code with:", {
       fileName: currentFile.name,
-      fileExtension: fileExtension,
+      fileExtension,
       detectedLanguage: language,
       storedLanguage: currentFile.language,
-      languageId: languageId,
+      languageId,
       contentPreview: currentFile.content.substring(0, 100) + "..."
     });
   
     try {
-      addTerminalCommand({ 
-        command: `Running ${currentFile.name} (${language})...`, 
-        output: "" 
+      addTerminalCommand({
+        command: `Running ${currentFile.name} (${language})...`,
+        output: "",
+        timestamp: getCurrentDateTime()
       });
-  
-      // For Java files, ensure they have a proper class structure
-      if (language === 'java' && !currentFile.content.includes('public class')) {
-        // Auto-wrap simple Java code in a class if needed
-        if (!currentFile.content.includes('class')) {
-          const className = currentFile.name.replace('.java', '');
-          const wrappedCode = `
-public class ${className} {
-    public static void main(String[] args) {
-${currentFile.content.split('\n').map(line => '        ' + line).join('\n')}
-    }
-}`;
-          get().updateFile(currentFile.id, wrappedCode);
-          console.log("Auto-wrapped Java code in a class");
-        }
-      }
-
-      const response = await fetch("http://127.0.0.1:8000/api/run-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source_code: currentFile.content,
-          language_id: languageId,
-          stdin: "", // Standard input if needed
-        }),
-      });
-  
-      console.log("Response status:", response.status);
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server error response:", errorText);
-        throw new Error(`Server error: ${response.status} - ${errorText}`);
-      }
+      // Java files handling code...
       
-      const result = await response.json();
-      console.log("Response body:", result);
-  
-      // Handle the execution results
-      if (result.output !== undefined) {
+      const response = await runCode(currentFile.content, languageId, "");
+      if (response.success) {
         addTerminalCommand({ 
           command: `Output (${language}):`, 
-          output: result.output || "[No output]" 
-        });
-      } else if (result.error) {
-        addTerminalCommand({ 
-          command: `Error (${language}):`, 
-          output: result.error 
-        });
-      } else if (result.stderr) {
-        addTerminalCommand({ 
-          command: `Error (${language}):`, 
-          output: result.stderr 
-        });
-      } else if (result.compile_output) {
-        addTerminalCommand({ 
-          command: `Compilation Error (${language}):`, 
-          output: result.compile_output 
+          output: `${response.output || "[No output]"}\n\n⏱ Execution Time: ${response.time || "N/A"} sec`,
+          timestamp: getCurrentDateTime()
         });
       } else {
         addTerminalCommand({ 
-          command: `Execution completed (${language}):`, 
-          output: "No output returned." 
+          command: "Execution Error:", 
+          output: response.error || "Unknown error" ,
+          timestamp: getCurrentDateTime()
         });
       }
-    } catch (error: unknown) {
-      console.error("Execution error:", error);
+      
+
+    } catch (error) {
+      console.error("Full error details:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       addTerminalCommand({ 
-        command: "Execution Error:", 
-        output: error instanceof Error ? error.message : String(error)
+        command: "Client Error:", 
+        output: errorMessage ,
+        timestamp: getCurrentDateTime()
       });
     }
   },
+  
 
   initializeDefaultFile: () => {
     const extension = getFileExtension(defaultContent);
@@ -451,3 +419,4 @@ ${currentFile.content.split('\n').map(line => '        ' + line).join('\n')}
     }));
   },
 }));
+
