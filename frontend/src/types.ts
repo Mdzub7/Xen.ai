@@ -45,7 +45,7 @@ export type EditorStore = EditorState & {
   initializeDefaultFile: () => void;
 };
 
-export type View = 'explorer' | 'search' | 'sourceControl' | 'extensions' | 'settings' | 'profile' | 'ai' | 'debug' | 'none';
+export type View = 'explorer' | 'search' | 'sourceControl' | 'extensions' | 'settings' | 'profile' | 'ai' | 'debug' | 'logout'| 'none';
 
 export type Folder = {
   id: string;

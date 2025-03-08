@@ -25,9 +25,6 @@ export const Editor: React.FC = () => {
               Open Folder
             </button>
             <button className="px-4 py-2 bg-black/30 hover:bg-black/40 rounded-lg border border-white/10 w-48">
-              Clone Git Repository
-            </button>
-            <button className="px-4 py-2 bg-black/30 hover:bg-black/40 rounded-lg border border-white/10 w-48">
               New File
             </button>
           </div>

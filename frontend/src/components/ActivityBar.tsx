@@ -4,15 +4,18 @@ import {
   Search,
   Settings,
   UserCircle,
-  Bot,  // Add Bot import
+  Bot, 
+  LogOut // Add Bot import
 } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import type { View } from '../types';
-
+import { logOut } from './auth/firebase';
+import { useNavigate } from "react-router-dom";
 
 type AIView = Extract<View, 'ai' | 'debug'>;
 
 export const ActivityBar: React.FC = () => {
+  const navigate = useNavigate();
   const { currentView, setCurrentView, isAIPanelOpen, toggleAIPanel } = useEditorStore();
 
   const handleViewChange = (view: View) => {
@@ -27,6 +30,19 @@ export const ActivityBar: React.FC = () => {
       setCurrentView(view);
     }
   };
+
+
+
+const handleLogout = async () => {
+  try {
+    await logOut();
+    // Redirect to login page after logout
+    navigate("/"); 
+  } catch (error) {
+    console.error("Failed to log out:", error);
+  }
+};
+
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white/70">
@@ -58,8 +74,22 @@ export const ActivityBar: React.FC = () => {
         >
           <Search size={24} className="text-gray-400" />
         </button>
+
+
+
+
+
         
         <div className="flex-1" />  {/* This creates space between top and bottom buttons */}
+
+        <button
+          className={`p-2 hover:bg-[#3c3c3c] rounded mb-2`}
+        onClick={handleLogout}
+        title="Logout"
+        >
+        <LogOut size={24} className="text-gray-400" />
+        </button>
+
         <button
           className={`p-2 hover:bg-[#3c3c3c] rounded mb-2 ${
             currentView === 'settings' ? 'bg-[#37373d]' : ''

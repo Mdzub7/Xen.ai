@@ -35,7 +35,7 @@ export const Home: React.FC = () => {
             </motion.div>
             <div className="space-y-4">
               {[
-                { number: 1, title: "AI-Powered Code Assistance", active: true },
+                { number: 1, title: "AI-Powered Code Assistance", active: false },
                 { number: 2, title: "Real-time Collaboration", active: false },
                 { number: 3, title: "Smart Code Management", active: false }
               ].map((item) => (

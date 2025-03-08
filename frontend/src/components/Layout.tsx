@@ -9,6 +9,7 @@ import { SearchView } from './views/SearchView';
 import { SettingsView } from './views/SettingsView';
 import { ProfileView } from './views/ProfileView';
 import { Toolbar } from './Toolbar';
+import { logOut } from './auth/firebase';
 
 const Layout: React.FC = () => {
   const { isAIPanelOpen, toggleAIPanel, currentView } = useEditorStore();
@@ -32,6 +33,9 @@ const Layout: React.FC = () => {
         return <SettingsView />;
       case 'profile':
         return <ProfileView />;
+      case 'logout':
+        logOut()
+        return null;
       default:
         return null;
     }
