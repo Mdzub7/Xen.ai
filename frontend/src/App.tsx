@@ -14,24 +14,25 @@ import { SignUp } from './components/auth/SignUp';
 import { useEditorStore } from './store/editorStore';
 import { Login } from './components/auth/Login';
 import { Home } from './components/Home';
-
+import { NotFoundPage } from './components/NotFoundPage';
+import { SidePanel } from './components/SidePanel';
 const Layout = () => {
   const { isAIPanelOpen, currentView } = useEditorStore();
 
-  const renderSidePanel = () => {
-    switch (currentView) {
-      case 'explorer':
-        return <FileExplorer />;
-      case 'search':
-        return <SearchView />;
-      case 'settings':
-        return <SettingsView />;
-      case 'profile':
-        return <ProfileView />;
-      default:
-        return null;
-    }
-  };
+  // const renderSidePanel = () => {
+  //   switch (currentView) {
+  //     case 'explorer':
+  //       return <FileExplorer />;
+  //     case 'search':
+  //       return <SearchView />;
+  //     case 'settings':
+  //       return <SettingsView />;
+  //     case 'profile':
+  //       return <ProfileView />;
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -40,7 +41,7 @@ const Layout = () => {
         <ActivityBar />
         {currentView !== 'none' && currentView !== 'ai' && (
           <div className="w-64 min-w-64 border-r border-[#3c3c3c]">
-            {renderSidePanel()}
+            <SidePanel/>
           </div>
         )}
         <div className={`flex-1 flex flex-col ${isAIPanelOpen ? 'w-[70%]' : ''}`}>
@@ -78,6 +79,8 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/v1/*" element={<Layout />} />
+
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );

@@ -1,308 +1,172 @@
-import React, { useState } from 'react';
-import { X, Send } from 'lucide-react';
-import { useEditorStore } from '../store/editorStore';
-import { Message } from '../types';
-import { CodeBlock } from './CodeBlock';
-import { formatAIResponse} from '../utils/formatResponse';
+import React, { useState, useEffect, useRef } from "react";
+import { X, Send } from "lucide-react";
+import { useEditorStore } from "../store/editorStore";
+import { Message } from "../types";
+import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { getFirebaseToken } from "../auth/firebaseToken";
 import "highlight.js/styles/github-dark.css";
-import Markdown from 'react-markdown';
-import '../styles/codeBlock.css';
-import rehypeRaw from 'rehype-raw';
-import { LoadingSpinner } from './LoadingSpinner';
-import '../styles/loadingSpinner.css';
-import { getFirebaseToken } from '../auth/firebaseToken'; 
+import "../styles/codeBlock.css";
+import "../styles/loadingSpinner.css";
+import { Link } from "react-router-dom";
 
 interface Section {
-  type: 'code' | 'text';
+  type: "code" | "text";
   content: string;
   language?: string;
-  label?: string;
 }
 
-// Add a close button to the top of the panel
 export const AIPanel: React.FC = () => {
-  const { isAIPanelOpen, toggleAIPanel, messages, addMessage, selectedModel, setSelectedModel, isReviewLoading, setIsReviewLoading } = useEditorStore();
-  const [input, setInput] = useState('');
+  const {
+    isAIPanelOpen,
+    toggleAIPanel,
+    messages,
+    addMessage,
+    selectedModel,
+    setSelectedModel,
+    isReviewLoading,
+    setIsReviewLoading,
+  } = useEditorStore();
+
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await getFirebaseToken();
+      setIsAuthenticated(!!token);
+    };
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  React.useEffect(() => {
-    scrollToBottom();
   }, [messages]);
 
-  const formatMessage = (content: string) => {
-    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-    const parts = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = codeBlockRegex.exec(content)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({
-          type: 'text',
-          content: content.slice(lastIndex, match.index),
-        });
-      }
-
-      parts.push({
-        type: 'code',
-        language: match[1] || 'plaintext',
-        content: match[2].trim(),
-      });
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    if (lastIndex < content.length) {
-      parts.push({
-        type: 'text',
-        content: content.slice(lastIndex),
-      });
-    }
-
-    return parts;
-  };
-
   const handleModelSelect = (model: string) => {
-    setSelectedModel(model as any); // Cast to AIModel type
+    setSelectedModel(model as any);
   };
 
   const handleSendMessage = async () => {
-    const token = await getFirebaseToken();
-    console.log('token is',token)
-    if (!token) {
-        throw new Error("User not authenticated");
-    }
     if (!input.trim()) return;
     setIsLoading(true);
 
+    const token = await getFirebaseToken();
+    if (!token) {
+      setIsAuthenticated(false);
+      return;
+    }
+
     const userMessage: Message = {
       id: Math.random().toString(36).substr(2, 9),
-      role: 'user',
+      role: "user",
       content: input,
       timestamp: new Date().toISOString(),
     };
     addMessage(userMessage);
-    setInput('');
+    setInput("");
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/ai/get-review', {
-        method: 'POST',
+      const response = await fetch("http://127.0.0.1:8000/ai/get-review", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization':`Bearer ${token}`
-
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           code: input,
-          service_choice: selectedModel
+          service_choice: selectedModel,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
-      }
+      if (!response.ok) throw new Error("Failed to get AI response");
 
       const rawResponse = await response.text();
-      const formattedResponse = formatAIResponse(rawResponse);
-      
       const assistantMessage: Message = {
         id: Math.random().toString(36).substr(2, 9),
-        role: 'assistant',
-        content: formattedResponse,
+        role: "assistant",
+        content: rawResponse,
         timestamp: new Date().toISOString(),
       };
       addMessage(assistantMessage);
     } catch (error) {
-      console.error('Error:', error);
-      const errorMessage: Message = {
+      console.error("Error:", error);
+      addMessage({
         id: Math.random().toString(36).substr(2, 9),
-        role: 'assistant',
-        content: 'Sorry, I encountered an error while processing your request.',
+        role: "assistant",
+        content: "Sorry, I encountered an error while processing your request.",
         timestamp: new Date().toISOString(),
-      };
-      addMessage(errorMessage);
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCodeAction = async (action: string, codeBlock: any) => {
-    try {
-      let cleanCode = '';
-      
-      if (typeof codeBlock === 'string') {
-        cleanCode = codeBlock;
-      } else if (Array.isArray(codeBlock)) {
-        cleanCode = codeBlock.reduce((acc: string, curr: any) => {
-          if (typeof curr === 'string') return acc + curr;
-          if (curr?.props?.children) {
-            return acc + (Array.isArray(curr.props.children) 
-              ? curr.props.children.join('') 
-              : curr.props.children);
-          }
-          return acc;
-        }, '');
-      }
-      
-      cleanCode = cleanCode
-        .replace(/^\s*\/\*\*[\s\S]*?\*\/\s*/m, '')
-        .trim();
-    
-      switch(action) {
-        case 'copy':
-          await navigator.clipboard.writeText(cleanCode);
-          // Add notification handling here if needed
-          break;
-          
-        case 'apply':
-          // Handle code application
-          break;
-          
-        case 'new-file':
-          const blob = new Blob([cleanCode], { type: 'text/plain' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'code-snippet.js';
-          document.body.appendChild(a);
-          a.click();
-          URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-          break;
-      }
-    } catch (error) {
-      console.error('Action failed:', error);
-    }
-  };
-
-  // Update the code component type definition
-  interface CodeProps extends React.HTMLAttributes<HTMLElement> {
-    node?: any;
-    inline?: boolean;
-    className?: string;
-    children?: React.ReactNode;
-  }
-
-  const renderMessageContent = (content: string) => {
-    return (
-      <Markdown
-        rehypePlugins={[rehypeRaw, rehypeHighlight]}
-        components={{
-          code: ({ node, inline, className, children, ...props }: CodeProps) => {
-            if (inline) {
-              return <code className={className} {...props}>{children}</code>;
-            }
-  
-            // Process the code content
-            const codeContent = React.Children.toArray(children)
-              .map(child => 
-                typeof child === 'object' && child !== null && 'props' in child 
-                  ? child.props.children 
-                : child
-              )
-              .join('')
-              .replace(/\\n/g, '\n')     // Convert \n to newlines
-              .replace(/\\t/g, '  ')     // Convert \t to spaces
-              .replace(/\t/g, '  ');     // Convert actual tabs to spaces
-  
-            // Extract language from className
-            const language = className?.replace(/language-/, '') || 'plaintext';
-  
-            return (
-              <div className="code-block-container">
-                <pre className={`hljs language-${language}`}>
-                  <code className={className} {...props}>
-                    {codeContent}
-                  </code>
-                </pre>
-                <div className="code-actions">
-                  <button 
-                    onClick={() => handleCodeAction('copy', codeContent)}
-                    title="Copy to clipboard"
-                  >
-                    Copy
-                  </button>
-                  <button 
-                    onClick={() => handleCodeAction('apply', codeContent)}
-                    title="Apply changes"
-                  >
-                    Apply
-                  </button>
-                  <button 
-                    onClick={() => handleCodeAction('new-file', codeContent)}
-                    title="Download as file"
-                  >
-                    New File
-                  </button>
-                </div>
-              </div>
-            );
-          }
-        }}
-      >
-        {content.replace(/\\n/g, '\n').replace(/\\t/g, '  ')}
-      </Markdown>
-    );
-  };
-
   return (
     <div className="fixed right-0 top-0 h-[97.3vh] w-[30vw] flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-l border-white/10 shadow-lg z-50">
-      {/* Header with horizontal gradient */}
+      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-black/20 to-black">
         <div className="flex items-center gap-4">
-          <span className="text-white-700 font-medium">ChatBot</span>
-          <span className="text-blue-300 rounded-full bg-grey px-2 py-1 text-xs font-medium shadow-sm">Beta</span>
+          <span className="text-white font-medium">ChatBot</span>
+          <span className="text-blue-300 rounded-full bg-grey px-2 py-1 text-xs font-medium shadow-sm">
+            Beta
+          </span>
         </div>
-        <div className="flex items-center gap-2"> 
-          <button 
-            onClick={toggleAIPanel}
-            className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]"
-            title="Close AI Panel"
-          >
-            <X size={16} />
-          </button>
-        </div>
+        <button
+          onClick={toggleAIPanel}
+          className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]"
+          title="Close AI Panel"
+        >
+          <X size={16} />
+        </button>
       </div>
 
-      {/* Empty state - centered content */}
-      {messages.length === 0 && !isLoading && !isReviewLoading && (
+      {/* If not authenticated, show blur effect */}
+      {!isAuthenticated && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center 
+       bg-black/30 backdrop-blur-sm text-white text-lg font-semibold 
+       text-center p-6">
+          <p className="text-white/90">Please login to use the AI assistant.</p>
+          <Link
+            to="/login"
+            className="mt-4 px-6 py-2 border border-white/50 text-white/80 rounded-lg 
+                 hover:bg-white hover:text-black transition-all duration-300 ease-in-out"
+          >
+            Login!
+          </Link>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {isAuthenticated && messages.length === 0 && !isLoading && !isReviewLoading && (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <h1 className="text-2xl font-semibold text-[#e6edf3] mb-2">Xen.ai Mode</h1>
+          <h1 className="text-2xl font-semibold text-[#e6edf3] mb-2">
+            Xen.ai Mode
+          </h1>
           <p className="text-[#7d8590] text-sm max-w-md">
-            Feel free to ask questions or seek advice about your codebase or coding in general.
+            Feel free to ask questions or seek advice about your codebase.
           </p>
         </div>
       )}
 
-      {/* Center the loading spinner when there are no messages */}
-      {messages.length === 0 && (isLoading || isReviewLoading) && (
-        <div className="flex-1 flex flex-col items-center justify-center">
+      {/* Loading Spinner */}
+      {isAuthenticated && messages.length === 0 && (isLoading || isReviewLoading) && (
+        <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner />
         </div>
       )}
 
-      {/* Messages area */}
-      {messages.length > 0 && (
+      {/* Messages */}
+      {isAuthenticated && messages.length > 0 && (
         <div className="flex-1 overflow-y-auto px-4 py-6">
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-6 last:mb-2`}
-            >
-              <div
-                className={`${
-                  message.role === 'user'
-                    ? 'ml-auto bg-[#2d333b] text-[#e6edf3] max-w-[85%]'
-                    : 'mr-auto bg-[#22272e] text-[#e6edf3] max-w-[90%]'
-                } rounded-lg p-6 shadow-md`}
-              >
-                {renderMessageContent(message.content)}
+            <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
+              <div className={`rounded-lg p-6 shadow-md ${message.role === "user" ? "bg-[#2d333b] text-[#e6edf3] max-w-[85%]" : "bg-[#22272e] text-[#e6edf3] max-w-[90%]"}`}>
+                <Markdown rehypePlugins={[rehypeRaw, rehypeHighlight]}>{message.content}</Markdown>
                 <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
                   {new Date(message.timestamp).toLocaleTimeString()}
                 </p>
@@ -313,83 +177,25 @@ export const AIPanel: React.FC = () => {
           <div ref={messagesEndRef} />
         </div>
       )}
-        
-      {/* Input area with model selection dropdown */}
-      <div className="p-4 border-t border-white/10 bg-black/20">
-        <div className="flex items-center gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
-              e.target.style.height = 'inherit';
-              e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`;
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            placeholder="Ask the AI assistant..."
-            className="flex-1 bg-black/40 text-white rounded-lg px-4 py-3 text-sm focus:outline-none 
+
+      {/* Input Area */}
+      {isAuthenticated && (
+        <div className="p-4 border-t border-white/10 bg-black/20">
+          <div className="flex items-center gap-2">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask the AI assistant..."
+              className="flex-1 bg-black/40 text-white rounded-lg px-4 py-3 text-sm focus:outline-none 
               border border-white/10 focus:border-[#4f8cc9] resize-none min-h-[44px] max-h-[150px] overflow-y-auto"
-            disabled={isLoading || isReviewLoading}
-            rows={1}
-          />
-          
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="relative group">
-              <button 
-                className="px-3 py-2 rounded bg-black/40 text-white hover:bg-gradient-to-r hover:from-[#0A192F] hover:to-[#0F1A2B] transition-colors duration-200 text-sm font-medium"
-              >
-                {selectedModel === 'gemini' ? 'Gemini' : 
-                 selectedModel === 'deepseek' ? 'DeepSeek' : 'Qwen'}
-              </button>
-              
-              <div 
-                className="absolute bottom-full mb-1 right-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-                bg-[#161b22] rounded-md shadow-lg overflow-hidden z-50 transition-all duration-300 transform translate-y-1 
-                group-hover:translate-y-0 min-w-[120px]"
-              >
-                <div className="py-1">
-                  <button
-                    className={`w-full px-4 py-2 text-left text-sm ${
-                      selectedModel === 'gemini' ? 'bg-[#4f8cc9] text-white' : 'text-[#e6edf3] hover:bg-[#21262d]'
-                    } transition-colors duration-150`}
-                    onClick={() => handleModelSelect('gemini')}
-                  >
-                    Gemini
-                  </button>
-                  <button
-                    className={`w-full px-4 py-2 text-left text-sm ${
-                      selectedModel === 'deepseek' ? 'bg-[#4f8cc9] text-white' : 'text-[#e6edf3] hover:bg-[#21262d]'
-                    } transition-colors duration-150`}
-                    onClick={() => handleModelSelect('deepseek')}
-                  >
-                    DeepSeek
-                  </button>
-                  <button
-                    className={`w-full px-4 py-2 text-left text-sm ${
-                      selectedModel === 'qwen-2.5' ? 'bg-[#4f8cc9] text-white' : 'text-[#e6edf3] hover:bg-[#21262d]'
-                    } transition-colors duration-150`}
-                    onClick={() => handleModelSelect('qwen-2.5')}
-                  >
-                    Qwen
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <button
-              onClick={handleSendMessage}
-              className="px-3 py-2 rounded bg-black/40 text-white/70 hover:bg-black/60 disabled:opacity-50"
               disabled={isLoading || isReviewLoading}
-            >
+            />
+            <button onClick={handleSendMessage} className="px-3 py-2 rounded bg-black/40 text-white hover:bg-black/60 disabled:opacity-50" disabled={isLoading || isReviewLoading}>
               <Send size={16} />
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

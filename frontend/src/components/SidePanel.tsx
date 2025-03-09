@@ -4,7 +4,6 @@ import { FileExplorer } from './FileExplorer';
 import { SearchView } from './views/SearchView';
 import { SettingsView } from './views/SettingsView';
 import { ProfileView } from './views/ProfileView';
-import { logOut } from './auth/firebase';
 
 export const SidePanel: React.FC = () => {
   const { currentView, currentFile} = useEditorStore();
@@ -20,7 +19,6 @@ export const SidePanel: React.FC = () => {
       case 'profile':
         return <ProfileView />;
       case 'logout':
-        logOut();
         return null;
       case 'none':
         return null;
