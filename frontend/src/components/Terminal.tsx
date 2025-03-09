@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play, Clock } from "lucide-react";
+import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play, FileText } from "lucide-react";
 import { useEditorStore } from "../store/editorStore";
 import { runCode } from '../utils/runJudge0';
 import ExecutionTimeWidget from "./ExecutionTimeWidget";
@@ -17,7 +17,7 @@ const COMMANDS = {
   version: "Display terminal version",
 };
 
-// Function to get current time as a string - moved outside component
+// Function to get current time as a string
 function getTimeString() {
   const now = new Date();
   const hours = now.getHours().toString().padStart(2, '0');
@@ -26,45 +26,91 @@ function getTimeString() {
   return `${hours}:${minutes}:${seconds}`;
 }
 
+// Create a global store for stdin
+let globalStdin = "";
+export const getStdin = () => globalStdin;
+export const setGlobalStdin = (value: string) => {
+  globalStdin = value;
+};
+
+// Modified to get input from global store
 export const executeCode = async () => {
   const currentFile = useEditorStore.getState().currentFile;
   const addTerminalCommand = useEditorStore.getState().addTerminalCommand;
   const setExecutionTime = useEditorStore.getState().setExecutionTime;
 
-  if (!currentFile) return "Error: No file selected.";
+  if (!currentFile) {
+    addTerminalCommand({
+      command: "run",
+      output: "Error: No file selected.",
+      timestamp: getTimeString()
+    });
+    return;
+  }
 
   // Get language ID safely
   const languageId = useEditorStore.getState().getLanguageId?.(currentFile.language) || 71;
   const exactTime = getTimeString(); // Capture exact time
   
+  // Use the global stdin
+  const input = globalStdin;
+  
+  // Log the input to terminal for transparency
+  // if (input) {
+  //   addTerminalCommand({
+  //     command: "stdin",
+  //     output: input,
+  //     timestamp: exactTime
+  //   });
+  // }
+  
   try {
-    // Send code execution request
-    const response = await runCode(currentFile.content, languageId, "");
+    // Pass the input to runCode for stdin
+    const response = await runCode(currentFile.content, languageId, input);
     
     if (response.success) {
       addTerminalCommand({ 
         command: `Output (${currentFile.language}):`, 
         output: response.output || "[No output]",
-        timestamp: exactTime // Store exact execution time
+        timestamp: exactTime
       });
-      const execTime=response.time ||"N/A";
+      const execTime = response.time || "N/A";
       setExecutionTime(execTime);
+    } else {
+      // Handle error case
+      addTerminalCommand({
+        command: "Error",
+        output: response.error || "Execution failed",
+        timestamp: exactTime
+      });
     }
   } catch (error) {
     console.error("Execution error:", error);
-    return "Error: Failed to Compile.";
+    addTerminalCommand({
+      command: "Error",
+      output: "Failed to compile or execute code.",
+      timestamp: exactTime
+    });
   }
 }
 
-export const Terminal: React.FC = () => {
+export const Terminal = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [currentCommand, setCurrentCommand] = useState("");
   const [currentTime, setCurrentTime] = useState(getTimeString());
+  const [activeTab, setActiveTab] = useState("terminal");
+  const [stdinValue, setStdinValue] = useState("");
+  
   const { terminalHistory, addTerminalCommand, setTerminalHistory } = useEditorStore();
   const terminalRef = useRef<HTMLDivElement>(null);
   const currentFile = useEditorStore((state) => state.currentFile);
   const allFiles = useEditorStore((state) => state.files);
+
+  // Update global stdin when local stdin changes
+  useEffect(() => {
+    setGlobalStdin(stdinValue);
+  }, [stdinValue]);
 
   // Update current time every second for input line only
   useEffect(() => {
@@ -85,7 +131,6 @@ export const Terminal: React.FC = () => {
     setTerminalHistory([]);
   };
 
-  
   const processCommand = async (command: string) => {
     const args = command.split(" ");
     const cmd = args[0].toLowerCase();
@@ -105,7 +150,9 @@ export const Terminal: React.FC = () => {
         if (!currentFile) {
           return "Error: No file is open to run.";
         }
-        return await executeCode();
+        // Execute with current stdin value
+        await executeCode();
+        return null;
 
       case "echo":
         return args.slice(1).join(" ");
@@ -133,7 +180,7 @@ export const Terminal: React.FC = () => {
     }
   };
 
-  const handleCommand = async (e: React.KeyboardEvent) => {
+  const handleCommand = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && currentCommand.trim()) {
       const command = currentCommand.trim();
       setCurrentCommand("");
@@ -141,15 +188,22 @@ export const Terminal: React.FC = () => {
       // Capture the exact time as string when command is entered
       const exactTime = getTimeString();
       
+      addTerminalCommand({ 
+        command, 
+        output: "",
+        timestamp: exactTime
+      });
       
       const output = await processCommand(command);
 
-      // Use the same captured time for consistency
-      addTerminalCommand({ 
-        command, 
-        output: output || "",
-        timestamp: exactTime
-      });
+      if (output !== null) {
+        // Update the last command with the output
+        const updatedHistory = [...terminalHistory];
+        if (updatedHistory.length > 0) {
+          updatedHistory[updatedHistory.length - 1].output = output || "";
+          setTerminalHistory(updatedHistory);
+        }
+      }
     }
   };
 
@@ -161,62 +215,107 @@ export const Terminal: React.FC = () => {
     };
   });
 
+  if (!isVisible) return null;
+
   return (
-    <div className="h-full flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
+    <div className="h-full flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black relative">
       {/* Execution Time Widget */}
       <ExecutionTimeWidget/>
       
-      <div className="flex items-center justify-between px-4 py-1 bg-black/20 border-b border-white/10">
-        <div className="flex items-center space-x-2">
-          <TerminalIcon size={14} className="text-[#7d8590]" />
-          <span className="text-sm text-[#e6edf3]">Terminal</span>
-        </div>
-        <div className="flex items-center space-x-2"> 
+      <div className={`flex flex-col ${isExpanded ? 'flex-grow' : 'h-48'}`}>
+        {/* Tab Headers */}
+        <div className="flex border-b border-white/10">
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
+            onClick={() => setActiveTab("terminal")}
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === "terminal"
+                ? "bg-[#0d1117] text-[#e6edf3] border-t-2 border-l border-r border-t-[#58a6ff] border-l-white/10 border-r-white/10"
+                : "text-[#7d8590] hover:text-[#e6edf3] hover:bg-[#21262d]/30"
+            }`}
           >
-            {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-          </button>
-          <button
-            onClick={() => setIsVisible(false)}
-            className="p-1 hover:bg-[#21262d] rounded text-[#7d8590] hover:text-[#e6edf3]"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      </div>
-      <div ref={terminalRef} className="flex-1 overflow-y-auto p-2 text-[#e6edf3] font-mono text-sm">
-        {processedHistory.map((entry, index) => (
-          <div key={index} className="whitespace-pre-wrap mb-1">
-            <div className="flex items-center">
-              <span className="text-[#7ee787]">➜</span>
-              {/* Use the pre-computed path string */}
-              <span className="text-[#58a6ff] ml-2">{entry.fullPath}</span>
-              <span className="ml-2 text-[#7d8590]">$</span>
-              <span className="ml-2">{entry.command}</span>
+            <div className="flex items-center space-x-2">
+              <TerminalIcon size={14} />
+              <span>Terminal</span>
             </div>
-            <div className="text-[#7d8590] ml-6">{entry.output}</div>
-          </div>
-        ))}
-        <div className="flex items-center mt-2">
-          <span className="text-[#7ee787]">➜</span>
-          <span className="text-[#58a6ff] ml-2">
-            {/* Use state variable for input line timestamp */}
-            {currentTime} ~/
-            {currentFile ? currentFile.name : "main"}
-          </span>
-          <span className="ml-2 text-[#7d8590]">$</span>
-          <input
-            type="text"
-            value={currentCommand}
-            onChange={(e) => setCurrentCommand(e.target.value)}
-            onKeyDown={handleCommand}
-            className="flex-1 ml-2 bg-transparent border-none outline-none text-[#e6edf3]"
-            spellCheck={false}
-          />
+          </button>
+          <button
+            onClick={() => setActiveTab("input")}
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === "input"
+                ? "bg-[#0d1117] text-[#e6edf3] border-t-2 border-l border-r border-t-[#58a6ff] border-l-white/10 border-r-white/10"
+                : "text-[#7d8590] hover:text-[#e6edf3] hover:bg-[#21262d]/30"
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <FileText size={14} />
+              <span>Input</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "terminal" && (
+            <div ref={terminalRef} className="h-full overflow-y-auto p-2 text-[#e6edf3] font-mono text-sm">
+              {processedHistory.map((entry, index) => (
+                <div key={index} className="whitespace-pre-wrap mb-1">
+                  <div className="flex items-center">
+                    <span className="text-[#7ee787]">➜</span>
+                    <span className="text-[#58a6ff] ml-2">{entry.fullPath}</span>
+                    <span className="ml-2 text-[#7d8590]">$</span>
+                    <span className="ml-2">{entry.command}</span>
+                  </div>
+                  <div className="text-[#7d8590] ml-6">{entry.output}</div>
+                </div>
+              ))}
+              <div className="flex items-center mt-2">
+                <span className="text-[#7ee787]">➜</span>
+                <span className="text-[#58a6ff] ml-2">
+                  {currentTime} ~/
+                  {currentFile ? currentFile.name : "main"}
+                </span>
+                <span className="ml-2 text-[#7d8590]">$</span>
+                <input
+                  type="text"
+                  value={currentCommand}
+                  onChange={(e) => setCurrentCommand(e.target.value)}
+                  onKeyDown={handleCommand}
+                  className="flex-1 ml-2 bg-transparent border-none outline-none text-[#e6edf3]"
+                  spellCheck={false}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "input" && (
+            <div className="h-full flex flex-col p-3">
+              <div className="mb-2 flex items-center text-[#e6edf3] text-sm">
+                <span>Custom Input</span>
+                <span className="text-[#7d8590] text-xs ml-2">
+                  (Will be used as stdin for any run command)
+                </span>
+              </div>
+              <textarea
+                value={stdinValue}
+                onChange={(e) => setStdinValue(e.target.value)}
+                placeholder="Enter your test input here..."
+                className="flex-1 p-3 rounded bg-[#0d1117] text-[#e6edf3] border border-[#30363d] font-mono text-sm resize-none focus:outline-none focus:border-[#58a6ff]"
+                spellCheck={false}
+              />
+              <div className="flex justify-end mt-3">
+                <button
+                  onClick={() => setStdinValue("")}
+                  className="px-3 py-1 rounded bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] text-sm mr-2"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 };
+
+export default Terminal;

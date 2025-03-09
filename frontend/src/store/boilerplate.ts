@@ -71,7 +71,7 @@ if __name__ == "__main__":
   }
   `,
   
-      "c++": `/**
+      cpp: `/**
    * ${fileName}
    * @date ${new Date().toISOString().split('T')[0]}
    */
@@ -340,7 +340,7 @@ if __name__ == "__main__":
     '.js': 'javascript',
     '.java': 'java',
     '.c': 'c',
-    '.cpp': 'c++',
+    '.cpp': 'cpp',
     '.ts': 'typescript',
     '.rb': 'ruby',
     '.go': 'go',
