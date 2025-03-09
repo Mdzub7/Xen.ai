@@ -49,10 +49,10 @@ if __name__ == "__main__":
   `,
   
       java: `/**
-   * ${normalizedClassName} class
+   * $Main class
    * @date ${new Date().toISOString().split('T')[0]}
    */
-  public class ${normalizedClassName} {
+  public class Main {
       public static void main(String[] args) {
           System.out.println("Hello, World!");
       }
