@@ -256,7 +256,7 @@ export const AIPanel: React.FC = () => {
       {/* Header with horizontal gradient */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-black/20 to-black">
         <div className="flex items-center gap-4">
-          <span className="text-white-700 font-medium">Chat Builder</span>
+          <span className="text-white-700 font-medium">ChatBot</span>
           <span className="text-blue-300 rounded-full bg-grey px-2 py-1 text-xs font-medium shadow-sm">Beta</span>
         </div>
         <div className="flex items-center gap-2"> 
