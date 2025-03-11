@@ -41,32 +41,32 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0d1117]">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
       {/* Activity Bar */}
-      <div className="fixed left-0 top-0 bottom-0 w-12 z-10 bg-[#161b22] border-r border-[#30363d]">
+      <div className="fixed left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-r border-white/10">
         <ActivityBar />
       </div>
       
       {/* Side Panel */}
       {currentView !== 'none' && (
-        <div className="fixed left-12 top-0 bottom-0 w-60 border-r border-[#30363d] bg-[#0d1117] z-10">
+        <div className="fixed left-12 top-0 bottom-0 w-60 border-r border-white/10 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black z-10">
           {renderSidePanel()}
         </div>
       )}
 
       {/* Main Content Area */}
       <div className={`ml-[288px] flex-1 flex flex-col ${isAIPanelOpen ? 'mr-[30vw]' : ''}`}>
-        <div className="flex-grow h-[70vh] overflow-hidden bg-[#0d1117]">
+        <div className="flex-grow h-[70vh] overflow-hidden bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
           <Editor />
         </div>
-        <div className="h-[30vh] border-t border-black bg-black/40">
+        <div className="h-[30vh] border-t border-white/10 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
           <Terminal />
         </div>
       </div>
 
       {/* AI Panel */}
       {isAIPanelOpen && (
-        <div className="fixed right-0 top-0 h-[70vh] w-[30vw] border-l border-[#30363d] bg-[#0d1117] z-50">
+        <div className="fixed right-0 top-0 h-[70vh] w-[30vw] border-l border-white/10 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black z-50">
           <AIPanel />
         </div>
       )}

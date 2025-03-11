@@ -78,7 +78,7 @@ export const FileExplorer: React.FC = () => {
 
   return (
     <div className="h-full bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white overflow-y-auto">
-      <div className="p-2 border-b border-white/10 bg-gradient-to-r from-black/40 to-black/20">
+      <div className="p-2 border-b border-white/10 bg-gradient-to-r from-from-[#0A192F] via-[#0F1A2B] to-black/40">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-xs font-medium">Explorer</h2>
           <div className="flex space-x-1">
@@ -106,7 +106,7 @@ export const FileExplorer: React.FC = () => {
               value={newItemName}
               onChange={(e) => setNewItemName(e.target.value)}
               placeholder={isCreatingFile ? "filename.ext" : "folder name"}
-              className="w-full bg-[#3c3c3c] text-white px-2 py-1 rounded text-sm mb-2"
+              className="w-full bg-black/30 text-white px-2 py-1 rounded text-sm mb-2 border border-white/10"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -126,7 +126,7 @@ export const FileExplorer: React.FC = () => {
                 Create
               </button>
               <button
-                className="text-xs bg-[#3c3c3c] hover:bg-[#4c4c4c] px-2 py-1 rounded"
+                className="text-xs bg-black/30 hover:bg-black/50 px-2 py-1 rounded border border-white/10"
                 onClick={() => {
                   setIsCreatingFile(false);
                   setIsCreatingFolder(false);
@@ -142,8 +142,8 @@ export const FileExplorer: React.FC = () => {
         {folders.map((folder) => (
           <div key={folder.id} className="mb-2">
             <div 
-              className={`flex items-center space-x-1 text-sm py-1 px-2 hover:bg-[#3c3c3c] cursor-pointer ${
-                selectedFolderId === folder.id ? 'bg-[#37373d]' : ''
+              className={`flex items-center space-x-1 text-sm py-1 px-2 hover:bg-black/30 cursor-pointer ${
+                selectedFolderId === folder.id ? 'bg-black/40 border-l-2 border-l-blue-500' : ''
               }`}
               onClick={(e) => handleFolderClick(folder.id, e)}
             >
@@ -163,7 +163,7 @@ export const FileExplorer: React.FC = () => {
                     <div
                       key={file.id}
                       className={`flex items-center justify-between text-sm py-1 px-2 cursor-pointer group ${
-                        currentFile?.id === file.id ? 'bg-[#37373d]' : 'hover:bg-[#3c3c3c]'
+                        currentFile?.id === file.id ? 'bg-black/40 border-l-2 border-l-blue-500' : 'hover:bg-black/30'
                       }`}
                       onClick={() => setCurrentFile(file)}
                     >
@@ -173,7 +173,7 @@ export const FileExplorer: React.FC = () => {
                       </div>
                       <div className="flex space-x-1 opacity-0 group-hover:opacity-100">
                         <button
-                          className="p-1 hover:bg-[#3c3c3c] rounded text-red-400"
+                          className="p-1 hover:bg-black/40 rounded text-red-400"
                           onClick={(e) => {
                             e.stopPropagation();
                             deleteFile(file.id);
@@ -195,7 +195,7 @@ export const FileExplorer: React.FC = () => {
             <div
               key={file.id}
               className={`flex items-center justify-between text-sm py-1 px-2 cursor-pointer group ${
-                currentFile?.id === file.id ? 'bg-[#37373d]' : 'hover:bg-[#3c3c3c]'
+                currentFile?.id === file.id ? 'bg-black/40 border-l-2 border-l-blue-500' : 'hover:bg-black/30'
               }`}
               onClick={() => setCurrentFile(file)}
             >
@@ -205,7 +205,7 @@ export const FileExplorer: React.FC = () => {
               </div>
               <div className="flex space-x-1 opacity-0 group-hover:opacity-100">
                 <button
-                  className="p-1 hover:bg-[#3c3c3c] rounded text-red-400"
+                  className="p-1 hover:bg-black/40 rounded text-red-400"
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteFile(file.id);

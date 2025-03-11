@@ -27,4 +27,5 @@ docker-compose.override.yml
 
 
 firebase
-xenai-auth-firebase-adminsdk-fbsvc-6b8fb5a521.json
+firebase-credentials.json
+firebase-credentials.json

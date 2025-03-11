@@ -2,6 +2,22 @@ import { create } from 'zustand';
 import type { File, Folder, Message, View } from '../types';
 import { getLanguageBoilerplate, extensionToLanguage, getFileExtension } from './boilerplate';
 import { runCode } from '../utils/runJudge0';
+import { CodeDiff, compareCode } from '../utils/codeCompare';
+
+interface UserData {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+type TerminalEntry = {
+  command: string;
+  output: string;
+  timestamp: string;
+};
+
+// Add AIModel type definition
+type AIModel = 'gemini' | 'deepseek' | 'qwen-2.5';
 
 interface EditorState {
   currentFile: File | null;
@@ -15,16 +31,44 @@ interface EditorState {
   selectedModel: AIModel;
   isAuthenticated: boolean;
   user: UserData | null;
-  isReviewLoading:boolean;
+  isReviewLoading: boolean;
+  executionTime: string | null;
+  showCodeDiff: boolean;
+  codeDiffs: CodeDiff[];
 }
 
-
-
-interface UserData {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+type EditorStateWithMethods = EditorState & {
+  setCurrentView: (view: View) => void;
+  addFile: (file: File) => void;
+  addFolder: (folder: Folder) => void;
+  deleteFile: (fileId: string) => void;
+  updateFile: (fileId: string, content: string) => void;
+  setCurrentFile: (file: File | null) => void;
+  toggleAIPanel: () => void;
+  addMessage: (message: Message) => void;
+  updateMessage: (id: string, content: string) => void;
+  createNewFile: (name: string, language: string, folderId?: string) => void;
+  createNewFolder: (name: string, parentId?: string) => void;
+  addTerminalCommand: (entry: TerminalEntry) => void;
+  formatCode: () => void;
+  saveFile: () => void;
+  runCode: () => void;
+  initializeDefaultFile: () => void;
+  updateFileLanguage: (fileId: string, language: string) => void;
+  setSelectedModel: (model: AIModel) => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (userData: { firstName: string; lastName: string; email: string; password: string }) => Promise<void>;
+  logout: () => void;
+  setIsReviewLoading: (isLoading: boolean) => void;
+  clearTerminalHistory: () => void;
+  setTerminalHistory: (history: TerminalEntry[]) => void; 
+  getLanguageId: (language: string) => number;
+  setExecutionTime: (time: string | null) => void;
+  setShowCodeDiff: (show: boolean) => void;
+  applyAICode: (suggestedCode: string) => void;
+  acceptCodeChanges: () => void;
+  rejectCodeChanges: () => void;
+};
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 const getCurrentDateTime = () => {
@@ -76,45 +120,6 @@ const getLanguageFromExtension = (fileName: string): string => {
   return extensionToLanguage[ext] || 'plaintext';
 };
 
-
-type TerminalEntry = {
-  command: string;
-  output: string;
-  timestamp: string;
-};
-
-// Add AIModel type definition
-type AIModel = 'gemini' | 'deepseek' | 'qwen-2.5';
-
-type EditorStateWithMethods = EditorState & {
-  setCurrentView: (view: View) => void;
-  addFile: (file: File) => void;
-  addFolder: (folder: Folder) => void;
-  deleteFile: (fileId: string) => void;
-  updateFile: (fileId: string, content: string) => void;
-  setCurrentFile: (file: File | null) => void;
-  toggleAIPanel: () => void;
-  addMessage: (message: Message) => void;
-  createNewFile: (name: string, language: string, folderId?: string) => void;
-  createNewFolder: (name: string, parentId?: string) => void;
-  addTerminalCommand: (entry: TerminalEntry) => void;
-  formatCode: () => void;
-  saveFile: () => void;
-  runCode: () => void;
-  initializeDefaultFile: () => void;
-  updateFileLanguage: (fileId: string, language: string) => void;
-  setSelectedModel: (model: AIModel) => void;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (userData: { firstName: string; lastName: string; email: string; password: string }) => Promise<void>;
-  logout: () => void;
-  setIsReviewLoading: (isLoading: boolean) => void;
-  clearTerminalHistory: () => void;
-  setTerminalHistory: (history: TerminalEntry[]) => void; 
-  getLanguageId: (language: string) => number;
-  executionTime: string | null;
-  setExecutionTime: (time: string | null) => void;
-};
-
 const isAIView = (view: View): boolean => ['ai', 'debug'].includes(view);
 
 export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
@@ -122,7 +127,7 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   currentFile: null,
   files: [],
   folders: [],
-  isAIPanelOpen: false,
+  isAIPanelOpen: true, // Set AI panel to be open by default
   messages: [],
   currentView: 'explorer',
   terminalCommands: [],
@@ -131,11 +136,21 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
   isAuthenticated: false,
   user: null,
   isReviewLoading: false,
+  executionTime: null,
+  showCodeDiff: false,
+  codeDiffs: [],
+  
   setIsReviewLoading: (isLoading) => set({ isReviewLoading: isLoading }),
   getLanguageId: getLanguageId,
-  executionTime: null,
   setExecutionTime: (time) => set({ executionTime: time }),
 
+  // Add the updateMessage function inside the store object
+  updateMessage: (id: string, content: string) => 
+    set(state => ({
+      messages: state.messages.map(message => 
+        message.id === id ? { ...message, content } : message
+      )
+    })),
   
   // Authentication methods
   login: async (email: string, password: string) => {
@@ -311,11 +326,10 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
     terminalHistory: [...state.terminalHistory, entry],
   })),
 
-  setTerminalHistory: (history: any) => set(() => ({
+  setTerminalHistory: (history: TerminalEntry[]) => set(() => ({
     terminalHistory: history,
   })),
 
-  
   formatCode: () => {
     const { currentFile } = get();
     if (!currentFile) return;
@@ -339,7 +353,7 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
     const { currentFile, addTerminalCommand, updateFile, updateFileLanguage, getLanguageId } = get();
     
     if (!currentFile) {
-      addTerminalCommand({ command: "Execution Error:", output: "No file selected.",timestamp:getCurrentDateTime() });
+      addTerminalCommand({ command: "Execution Error:", output: "No file selected.", timestamp: getCurrentDateTime() });
       return;
     }
   
@@ -388,7 +402,6 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
         });
       }
       
-
     } catch (error) {
       console.error("Full error details:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -419,6 +432,48 @@ export const useEditorStore = create<EditorStateWithMethods>((set, get) => ({
       currentFile: defaultFile, 
       files: [defaultFile] 
     }));
+  },
+  
+  // Add the new methods for code diff functionality
+  setShowCodeDiff: (show: boolean) => set({ showCodeDiff: show }),
+  
+  applyAICode: (suggestedCode: string) => {
+    const { currentFile } = get();
+    if (!currentFile) return;
+    
+    // Compare the current code with the suggested code
+    const diffs = compareCode(currentFile.content, suggestedCode);
+    
+    // Show the diff viewer
+    set({ 
+      showCodeDiff: true,
+      codeDiffs: diffs
+    });
+  },
+  
+  acceptCodeChanges: () => {
+    const { currentFile, codeDiffs } = get();
+    if (!currentFile) return;
+    
+    // Apply the changes by reconstructing the code from the diffs
+    // Only keep added and unchanged parts
+    let newContent = '';
+    codeDiffs.forEach(diff => {
+      if (!diff.removed) {
+        newContent += diff.value;
+      }
+    });
+    
+    // Update the file with the new content
+    get().updateFile(currentFile.id, newContent);
+    
+    // Hide the diff viewer
+    set({ showCodeDiff: false, codeDiffs: [] });
+  },
+  
+  rejectCodeChanges: () => {
+    // Just hide the diff viewer without applying changes
+    set({ showCodeDiff: false, codeDiffs: [] });
   },
 }));
 
