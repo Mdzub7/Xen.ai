@@ -1,22 +1,6 @@
-# Fix imports by using try-except to handle potential import errors
-try:
-    from fastapi import HTTPException
-    from fastapi.responses import StreamingResponse
-except ImportError:
-    # Fallback for development environments
-    print("Warning: FastAPI not found. Please install with: pip install fastapi")
-    # Define placeholder classes to prevent crashes
-    class HTTPException(Exception):
-        def __init__(self, status_code=500, detail="Internal Server Error"):
-            self.status_code = status_code
-            self.detail = detail
-            super().__init__(self.detail)
-    
-    class StreamingResponse:
-        def __init__(self, content, media_type=None):
-            self.content = content
-            self.media_type = media_type
 
+from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
 from ..services.ai_service import gemini_generate_review, deepseek_generate_review, qwen_generate_review, qwq_generate_review
 from ..models.code_model import CodeRequest
 import asyncio

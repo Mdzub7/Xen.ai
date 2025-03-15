@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routes import ai,judge0_route,auth_router,files
+from .routes import ai,judge0_route,auth_router,files,user_route
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -29,3 +29,4 @@ app.include_router(ai.router, prefix="/ai", tags=["AI Review"])
 app.include_router(judge0_route.router, prefix="/api", tags=["Compiler"])
 app.include_router(auth_router.auth_router, prefix="/auth")
 app.include_router(files.app, prefix="/project",tags=["File System"])
+app.include_router(user_route.router,prefix="",tags=["Profile"])
