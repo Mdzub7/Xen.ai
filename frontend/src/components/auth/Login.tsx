@@ -6,7 +6,7 @@ import logo from '../../logo.png';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { sendEmailVerification, getAuth } from "firebase/auth";
+import { sendEmailVerification, getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { motion } from 'framer-motion';
 
 export const Login: React.FC = () => {
@@ -203,6 +203,13 @@ export const Login: React.FC = () => {
             <p className="text-white/70 text-center mt-6">
               Don't have an account?{' '}
               <Link to="/signup" className="text-white hover:text-purple-400">Sign up</Link>
+            </p>
+
+            <p className="text-white/70 text-center mt-6">
+              Forgot Password?
+              <Link to="/forgot-password" className="text-blue-400 hover:underline ml-1">
+                Reset here
+              </Link>
             </p>
           </div>
         </div>

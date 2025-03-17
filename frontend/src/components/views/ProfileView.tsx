@@ -62,12 +62,12 @@ export const ProfileView: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center space-x-4">
             <img
-              src={profile.photo_url || "https://via.placeholder.com/150"}
+              src={profile.photo_url || "https://img.freepik.com/free-psd/contact-icon-illustration-isolated_23-2151903337.jpg?t=st=1742204766~exp=1742208366~hmac=28fee7bfac77754bce4ccdab72ea9cee0a12104d39718b678680e7b995245fa0&w=826"}
               alt="Profile"
               className="w-20 h-20 rounded-full border border-[#30363d]"
             />
             <div>
-              <h3 className="text-lg font-medium">{profile.display_name || "N/A"}</h3>
+              <h3 className="text-lg font-medium">{profile.display_name || profile.email  }</h3>
               <p className="text-sm text-[#7d8590]">{profile.email || "N/A"}</p>
             </div>
           </div>

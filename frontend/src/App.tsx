@@ -17,6 +17,7 @@ import { Home } from './components/Home';
 import { NotFoundPage } from './components/NotFoundPage';
 import { SidePanel } from './components/SidePanel';
 import CodeDiffViewer from './components/CodeDiffViewer';
+import ForgotPassword from './components/ForgotPassowrd';
 
 const Layout = () => {
   const { 
@@ -97,6 +98,7 @@ const App: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/v1/*" element={<Layout />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

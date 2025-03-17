@@ -7,7 +7,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  UserCredential
+  UserCredential,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -92,5 +93,14 @@ export const logOut = async (): Promise<void> => {
   } catch (error) {
     console.error("Logout error:", error);
     throw error;
+  }
+};
+
+export const sendResetEmail = async (auth: any, email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    console.log("Password reset email sent successfully");
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
   }
 };
