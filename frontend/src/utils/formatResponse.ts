@@ -16,8 +16,11 @@ export const formatAIResponse = (response: string): string => {
   try {
     const parsedResponse = JSON.parse(response);
     
-    if (parsedResponse.review) {
-      let formattedReview = parsedResponse.review
+    // Check for either 'review' or 'response' field in the parsed response
+    const reviewContent = parsedResponse.review || parsedResponse.response;
+    
+    if (reviewContent) {
+      let formattedReview = reviewContent
         .replace(/\n{3,}/g, '\n\n') // Remove excessive newlines
         .replace(/^[\s\n]+|[\s\n]+$/g, '') // Trim start & end spaces
         .replace(/(❌|✅|🔍|💡) /g, '\n$1 ') // Ensure emojis appear on new lines
