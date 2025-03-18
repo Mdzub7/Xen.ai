@@ -156,15 +156,6 @@ export const AIPanel: React.FC = () => {
     }
   
     try {
-      // Create a placeholder message for streaming
-      const assistantMessageId = Math.random().toString(36).substr(2, 9);
-      addMessage({
-        id: assistantMessageId,
-        role: "assistant",
-        content: "",
-        timestamp: new Date().toISOString(),
-      });
-  
       // Use fetch with streaming
       const response = await fetch("http://127.0.0.1:8000/ai/get-review", {
         method: "POST",
@@ -180,38 +171,21 @@ export const AIPanel: React.FC = () => {
   
       if (!response.ok) throw new Error("Failed to get AI response");
   
-      // Check if the response is a stream
-      const contentType = response.headers.get("Content-Type") || "";
+      // Process the response
+      const data = await response.json();
+      const responseContent = data.response || "";
       
-      if (contentType.includes("text/event-stream")) {
-        // Handle server-sent events
-        const reader = response.body?.getReader();
-        if (!reader) throw new Error("Failed to read response stream");
+      // Only add the assistant message when we have content
+      if (responseContent) {
+        addMessage({
+          id: Math.random().toString(36).substr(2, 9),
+          role: "assistant",
+          content: responseContent,
+          timestamp: new Date().toISOString(),
+        });
         
-        let accumulatedContent = "";
-        const decoder = new TextDecoder();
-        
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          // Decode the chunk and add it to accumulated content
-          const chunk = decoder.decode(value, { stream: true });
-          accumulatedContent += chunk;
-          
-          // Update the message with the accumulated content
-          updateMessage(assistantMessageId, accumulatedContent);
-          
-          // Scroll to the bottom to show new content
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-          
-          // Add a small delay to make the streaming effect more visible
-          await new Promise(resolve => setTimeout(resolve, 10));
-        }
-      } else {
-        // Handle regular JSON response
-        const data = await response.json();
-        updateMessage(assistantMessageId, data.response || data);
+        // Scroll to the bottom to show new content
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     } catch (error) {
       console.error("Error:", error);
@@ -306,14 +280,22 @@ export const AIPanel: React.FC = () => {
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
                 <div className={`rounded-lg p-6 shadow-md ${message.role === "user" ? "bg-[#2d333b] text-[#e6edf3] max-w-[85%]" : "bg-[#22272e] text-[#e6edf3] max-w-[90%]"}`}>
-                  <MarkdownWithCodeButtons content={message.content} />
+                  {message.content ? (
+                    <MarkdownWithCodeButtons content={message.content} />
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <div className="loader"></div>
+                      <span className="text-gray-400">AI is thinking...</span>
+                    </div>
+                  )}
                   <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
               </div>
             ))}
-            {(isLoading || isReviewLoading) && <LoadingSpinner />}
+            {/* Only show the standalone loading spinner when there's no assistant message yet */}
+            {(isLoading || isReviewLoading) && messages.filter(m => m.role === "assistant").length === 0 && <LoadingSpinner />}
             <div ref={messagesEndRef} />
           </div>
         )}

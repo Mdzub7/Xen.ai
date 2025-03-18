@@ -7,7 +7,7 @@ load_dotenv()
 
 
 SYSTEM_INSTRUCTION = """
-As an expert code reviewer with 7+ years of development experience, your role is to analyze, review, and improve code written by developers. Focus on the following key areas:
+As an expert code reviewer with 7+ years of development experience, your role is to analyze, review, and improve code written by developers. You should also answer programming-related questions but decline to answer non-programming queries. Focus on the following key areas:
 
 1. **Code Quality**: Ensure the code is clean, maintainable, and well-structured.
 2. **Best Practices**: Suggest industry-standard coding practices.
@@ -33,6 +33,11 @@ Review Guidelines:
 
 Provide feedback in a structured format, highlighting issues, recommended fixes, and improvements. Use ` ` delimiters only for the code itself, not for commentary or other blocks.
 
+Important Guidelines for Handling Queries:
+1. **Answer Programming Questions**: Respond to questions about programming languages, frameworks, algorithms, development practices, debugging, and software engineering concepts.
+2. **Decline Non-Programming Queries**: Politely decline to answer questions about weather, news, personal information, politics, entertainment, or other non-programming topics. For example: "I'm designed to help with programming and code-related questions. I can't provide information about weather, news, or other non-programming topics."
+3. **Maintain Format**: Always maintain the same structured format for code reviews and programming answers.
+
 You will be provided with code snippets surrounded by triple quotes. Here is an example placeholder:
 ```
 # Example code snippet
@@ -44,6 +49,8 @@ def example_function(x):
 ```
 
 Please review the provided code and apply the review guidelines above.
+
+If the user asks a programming-related question instead of providing code for review, answer their question helpfully. If the user asks about non-programming topics (like weather, news, personal information, politics, entertainment), politely decline with: "I'm designed to help with programming and code-related questions. I can't provide information about [topic]."
 """
 
 
@@ -62,7 +69,13 @@ async def gemini_generate_review(code: str) -> str:
 
 
     try:
-        prompt = f"{SYSTEM_INSTRUCTION}\n\nReview the following code:\n```python\n{code}\n```"
+        # Check if the input looks like code or a question
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            prompt = f"{SYSTEM_INSTRUCTION}\n\nReview the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            prompt = f"{SYSTEM_INSTRUCTION}\n\nUser question: {code}"
+        
         # Use the correct gemni_model instance for generating review
         response = gemni_model.generate_content([prompt])
         return response.text
@@ -83,10 +96,18 @@ async def qwen_generate_review(code: str) -> str:
     client=Groq(api_key=GROQ_API_KEY)
 
     try:
+        # Check if the input looks like code or a question
+        user_content = ""
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            user_content = f"Review the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            user_content = f"User question: {code}"
+            
         response = client.chat.completions.create(
             messages = [
                 {"role": "system", "content": SYSTEM_INSTRUCTION},
-                {"role": "user", "content": f"Review the following code:\n```python\n{code}\n```"}
+                {"role": "user", "content": user_content}
             ],
             model="qwen-2.5-coder-32b",
             stream=True
@@ -113,11 +134,19 @@ async def deepseek_generate_review(code: str) -> str:
     client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://openrouter.ai/api/v1")
 
     try:
+        # Check if the input looks like code or a question
+        user_content = ""
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            user_content = f"Review the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            user_content = f"User question: {code}"
+            
         response = client.chat.completions.create(
             model="deepseek/deepseek-r1:free",
             messages = [
                 {"role": "system", "content": SYSTEM_INSTRUCTION},
-                {"role": "user", "content": f"Review the following code:\n```python\n{code}\n```"}
+                {"role": "user", "content": user_content}
             ],
             stream=True  # Enable streaming
         )
@@ -145,11 +174,19 @@ async def qwq_generate_review(code: str) -> str:
     client = OpenAI(api_key=OPENROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
 
     try:
+        # Check if the input looks like code or a question
+        user_content = ""
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            user_content = f"Review the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            user_content = f"User question: {code}"
+            
         response = client.chat.completions.create(
             model="anthropic/claude-3-opus:free",  # Using Claude 3 Opus via OpenRouter for QwQ
             messages = [
                 {"role": "system", "content": SYSTEM_INSTRUCTION},
-                {"role": "user", "content": f"Review the following code:\n```python\n{code}\n```"}
+                {"role": "user", "content": user_content}
             ],
             stream=True  # Enable streaming for word-by-word response
         )
