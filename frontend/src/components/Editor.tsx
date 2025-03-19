@@ -2,6 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { useEditorStore } from '../store/editorStore';
 import { TypeAnimation } from 'react-type-animation';
+import InlineCodeDiffViewer from './InlineCodeDiffViewer';
 
 // Add this interface to handle the non-standard webkitdirectory attribute
 interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,7 +11,7 @@ interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Editor: React.FC = () => {
-  const { currentFile, updateFile } = useEditorStore();
+  const { currentFile, updateFile, showCodeDiff, codeDiffs, acceptCodeChanges, rejectCodeChanges } = useEditorStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEditorChange = useCallback(
@@ -101,7 +102,7 @@ export const Editor: React.FC = () => {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full relative">
       <MonacoEditor
         height="100%"
         width="100%"
@@ -158,6 +159,13 @@ export const Editor: React.FC = () => {
           });
         }}
       />
+      {showCodeDiff && (
+        <InlineCodeDiffViewer 
+          diffs={codeDiffs} 
+          onAccept={acceptCodeChanges} 
+          onReject={rejectCodeChanges} 
+        />
+      )}
     </div>
   );
 };

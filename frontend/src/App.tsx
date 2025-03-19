@@ -71,14 +71,7 @@ const Layout = () => {
       </div>
       <StatusBar activeFile={currentFile} />
       
-      {/* Add the CodeDiffViewer component */}
-      {showCodeDiff && (
-        <CodeDiffViewer 
-          diffs={codeDiffs} 
-          onAccept={acceptCodeChanges} 
-          onReject={rejectCodeChanges} 
-        />
-      )}
+      {/* Code diff viewer is now integrated directly in the Editor component */}
     </div>
   );
 };

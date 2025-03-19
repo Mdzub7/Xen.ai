@@ -1,5 +1,6 @@
 import React from 'react';
 import { Copy, Download, Play } from 'lucide-react';
+import { useEditorStore } from '../store/editorStore';
 
 interface CodeBlockProps {
   code: string;
@@ -12,11 +13,14 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   language = 'typescript',
   label 
 }) => {
+  const { applyAICode } = useEditorStore();
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
   };
 
   const handleApply = () => {
+    // Apply the code directly to the editor with diff view
+    applyAICode(code);
   };
 
   const handleDownload = () => {
