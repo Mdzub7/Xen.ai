@@ -32,6 +32,11 @@ const TIPS = [
   "You can drag and drop files into the editor to open them."
 ];
 
+// Interface for selected file with reference
+interface SelectedFile extends File {
+  reference: string; // Unique reference ID for the file
+}
+
 export const AIPanel: React.FC = () => {
   const {
     isAIPanelOpen,
@@ -53,6 +58,7 @@ export const AIPanel: React.FC = () => {
   const [currentTip, setCurrentTip] = useState(0);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showFileSelector, setShowFileSelector] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const fileSelectorRef = useRef<HTMLDivElement>(null);
@@ -108,19 +114,28 @@ export const AIPanel: React.FC = () => {
     setShowModelDropdown(false);
   };
   
+  // Generate a unique reference ID for a file
+  const generateFileReference = (file: File): string => {
+    return `file-${file.id}-${Date.now()}`;
+  };
+  
+  // Remove a file from selected files
+  const removeSelectedFile = (reference: string) => {
+    setSelectedFiles(prev => prev.filter(file => file.reference !== reference));
+  };
+  
   const handleFileSelect = (file: File) => {
-    // Insert file content into the input
-    const fileReference = `\n\n\`\`\`${file.language}\n// File: ${file.name}\n${file.content}\n\`\`\`\n\n`;
-    setInput(prev => prev + fileReference);
+    // Add file to selected files with a unique reference
+    const reference = generateFileReference(file);
+    const selectedFile: SelectedFile = { ...file, reference };
+    
+    setSelectedFiles(prev => [...prev, selectedFile]);
     setShowFileSelector(false);
     
-    // Focus and resize textarea after adding content
+    // Focus textarea after adding file
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
-        textareaRef.current.style.height = 'auto';
-        const newHeight = Math.min(textareaRef.current.scrollHeight, 150);
-        textareaRef.current.style.height = `${newHeight}px`;
       }
     }, 0);
   };
@@ -130,8 +145,25 @@ export const AIPanel: React.FC = () => {
     setShowModelDropdown(false);
   };
 
+  // Prepare message content with selected files
+  const prepareMessageContent = (inputText: string): string => {
+    let content = inputText;
+    
+    // Add file content as code blocks if there are selected files
+    if (selectedFiles.length > 0) {
+      const fileBlocks = selectedFiles.map(file => {
+        return `\n\n\`\`\`${file.language}\n// File: ${file.name}\n${file.content}\n\`\`\`\n`;
+      }).join('');
+      
+      content += fileBlocks;
+    }
+    
+    return content;
+  };
+  
+  // Modify the handleSendMessage function to properly handle streaming
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && selectedFiles.length === 0) return;
     setIsLoading(true);
   
     const token = await getFirebaseToken();
@@ -139,15 +171,28 @@ export const AIPanel: React.FC = () => {
       setIsAuthenticated(false);
       return;
     }
+    
+    // Prepare message content with selected files
+    const messageContent = prepareMessageContent(input);
+    
+    // Create a user-friendly display message (without file content)
+    let displayContent = input;
+    
+    // Add file references to display content if there are selected files
+    if (selectedFiles.length > 0) {
+      const fileNames = selectedFiles.map(file => file.name).join(', ');
+      displayContent += `\n[Attached files: ${fileNames}]`;
+    }
   
     const userMessage: Message = {
       id: Math.random().toString(36).substr(2, 9),
       role: "user",
-      content: input,
+      content: displayContent, // Show input text and file references to the user
       timestamp: new Date().toISOString(),
     };
     addMessage(userMessage);
     setInput("");
+    setSelectedFiles([]);
     
     // Reset textarea height
     if (textareaRef.current) {
@@ -163,7 +208,7 @@ export const AIPanel: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          code: input,
+          code: messageContent, // Send the full content with file code
           service_choice: selectedModel,
         }),
       });
@@ -306,6 +351,27 @@ export const AIPanel: React.FC = () => {
         <div className="p-4 border-t border-white/10 bg-black/20">
           <div className="relative">
             <div className="flex flex-col rounded-lg border border-blue-500/50 bg-black/40 overflow-hidden">
+              {/* Selected files display area */}
+              {selectedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 px-4 pt-3 pb-1">
+                  {selectedFiles.map(file => (
+                    <div 
+                      key={file.reference}
+                      className="flex items-center bg-[#1c2128] text-[#e6edf3] text-xs rounded px-2 py-1 border border-[#30363d]"
+                    >
+                      <FileText size={12} className="mr-1 text-blue-400" />
+                      <span className="truncate max-w-[150px]">{file.name}</span>
+                      <button 
+                        onClick={() => removeSelectedFile(file.reference)}
+                        className="ml-1.5 text-[#7d8590] hover:text-[#e6edf3]"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               {/* Text input area that expands up to a certain height */}
               <textarea
                 ref={textareaRef}
@@ -320,7 +386,7 @@ export const AIPanel: React.FC = () => {
                     textarea.style.height = `${newHeight}px`;
                   }
                 }}
-                placeholder="Ask the AI assistant..."
+                placeholder={selectedFiles.length > 0 ? "Ask about the selected files..." : "Ask the AI assistant..."}
                 className="flex-1 bg-transparent text-white px-4 py-3 text-sm focus:outline-none 
                 resize-none min-h-[44px] max-h-[200px] overflow-y-auto"
                 disabled={isLoading || isReviewLoading}
