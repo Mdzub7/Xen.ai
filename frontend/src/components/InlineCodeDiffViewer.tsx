@@ -10,20 +10,20 @@ interface InlineCodeDiffViewerProps {
 
 const InlineCodeDiffViewer: React.FC<InlineCodeDiffViewerProps> = ({ diffs, onAccept, onReject }) => {
   return (
-    <div className="absolute inset-0 bg-[#0A192F]/95 z-10 flex flex-col">
-      <div className="flex justify-between items-center px-4 py-2 bg-[#1e1e1e] border-b border-[#3c3c3c]">
+    <div className="absolute inset-0 bg-gradient-to-b from-[#0A192F] to-[#050A14] z-10 flex flex-col">
+      <div className="flex justify-between items-center px-4 py-2 bg-gradient-to-r from-[#0F1A2B] to-[#0A1525] border-b border-[#2a3a5a]">
         <h3 className="text-white font-medium text-sm">Review the suggested changes</h3>
         <div className="flex space-x-2">
           <button 
             onClick={onReject}
-            className="px-3 py-1 bg-[#3c3c3c] hover:bg-[#4c4c4c] text-white rounded flex items-center space-x-1 text-xs"
+            className="px-3 py-1 bg-[#d82e1c] hover:bg-[#f03a26] text-white rounded flex items-center space-x-1 text-xs border border-[#ff4d3c]/30 transition-colors duration-200"
           >
             <X size={14} />
             <span>Reject</span>
           </button>
           <button 
             onClick={onAccept}
-            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center space-x-1 text-xs"
+            className="px-3 py-1 bg-[#2e78c2] hover:bg-[#3689db] text-white rounded flex items-center space-x-1 text-xs shadow-md shadow-blue-900/30 transition-all duration-200"
           >
             <Check size={14} />
             <span>Accept</span>
