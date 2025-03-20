@@ -17,7 +17,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   };
 
   const handleApply = () => {
-    // TODO: Implement code application logic
   };
 
   const handleDownload = () => {

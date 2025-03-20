@@ -130,7 +130,6 @@ export const AIPanel: React.FC = () => {
     setShowModelDropdown(false);
   };
 
-  // Modify the handleSendMessage function to properly handle streaming
   const handleSendMessage = async () => {
     if (!input.trim()) return;
     setIsLoading(true);
@@ -175,26 +174,24 @@ export const AIPanel: React.FC = () => {
       const data = await response.json();
       const responseContent = data.response || "";
       
-      // Only add the assistant message when we have content
       if (responseContent) {
         addMessage({
-          id: Math.random().toString(36).substr(2, 9),
-          role: "assistant",
-          content: responseContent,
-          timestamp: new Date().toISOString(),
-        });
+                  id: Math.random().toString(36).substr(2, 9),
+                  role: "assistant",
+                  content: responseContent,
+                  timestamp: new Date().toISOString(),
+                });
         
         // Scroll to the bottom to show new content
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     } catch (error) {
-      console.error("Error:", error);
       addMessage({
-        id: Math.random().toString(36).substr(2, 9),
-        role: "assistant",
-        content: "Sorry, I encountered an error while processing your request.",
-        timestamp: new Date().toISOString(),
-      });
+              id: Math.random().toString(36).substr(2, 9),
+              role: "assistant",
+              content: "Sorry, I encountered an error while processing your request.",
+              timestamp: new Date().toISOString(),
+            });
     } finally {
       setIsLoading(false);
     }
@@ -218,7 +215,7 @@ export const AIPanel: React.FC = () => {
           <X size={16} />
         </button>
       </div>
-
+  
       {/* Main content area - scrollable */}
       <div className="flex-1 overflow-y-auto">
         {/* If not authenticated, show blur effect */}
@@ -236,7 +233,7 @@ export const AIPanel: React.FC = () => {
             </Link>
           </div>
         )}
-
+  
         {/* Empty State with Did You Know panel - Centered */}
         {isAuthenticated && messages.length === 0 && !isLoading && !isReviewLoading && (
           <div className="h-full flex flex-col items-center justify-center p-6 text-center">
@@ -266,27 +263,22 @@ export const AIPanel: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* Loading Spinner */}
+  
+        {/* Loading Spinner - Show when messages are empty and loading */}
         {isAuthenticated && messages.length === 0 && (isLoading || isReviewLoading) && (
           <div className="flex-1 flex items-center justify-center">
             <LoadingSpinner />
           </div>
         )}
-
+  
         {/* Messages */}
         {isAuthenticated && messages.length > 0 && (
           <div className="px-4 py-6">
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
                 <div className={`rounded-lg p-6 shadow-md ${message.role === "user" ? "bg-[#2d333b] text-[#e6edf3] max-w-[85%]" : "bg-[#22272e] text-[#e6edf3] max-w-[90%]"}`}>
-                  {message.content ? (
+                  {message.content && (
                     <MarkdownWithCodeButtons content={message.content} />
-                  ) : (
-                    <div className="flex items-center space-x-3">
-                      <div className="loader"></div>
-                      <span className="text-gray-400">AI is thinking...</span>
-                    </div>
                   )}
                   <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
                     {new Date(message.timestamp).toLocaleTimeString()}
@@ -294,13 +286,21 @@ export const AIPanel: React.FC = () => {
                 </div>
               </div>
             ))}
-            {/* Only show the standalone loading spinner when there's no assistant message yet */}
-            {(isLoading || isReviewLoading) && messages.filter(m => m.role === "assistant").length === 0 && <LoadingSpinner />}
+    
+            {/* Always show loading spinner after the last user message when loading */}
+            {(isLoading || isReviewLoading) && (
+              <div className="flex justify-start mb-6">
+                  <div className="flex items-center space-x-3">
+                    <LoadingSpinner />
+                  </div>
+
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
-
+  
       {/* Input Area - Redesigned with isolated bottom toolbar */}
       {isAuthenticated && (
         <div className="p-4 border-t border-white/10 bg-black/20">
@@ -384,7 +384,7 @@ export const AIPanel: React.FC = () => {
                       <Sparkles size={14} className="ml-1 text-yellow-400" />
                     </button>
                     
-                    {/* Use only the independent ModelDropdown component */}
+                    {/* Model dropdown */}
                     {showModelDropdown && (
                       <ModelDropdown 
                         selectedModel={selectedModel}
@@ -394,7 +394,7 @@ export const AIPanel: React.FC = () => {
                     )}
                   </div>
                   
-                  {/* Send button - unchanged */}
+                  {/* Send button */}
                   <button 
                     onClick={handleSendMessage} 
                     className="text-white p-1.5 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:bg-blue-600/50"
@@ -410,84 +410,81 @@ export const AIPanel: React.FC = () => {
       )}
     </div>
   );
-};
-
-// Add this component at the end of the file, before the closing export statement
-
-// Model dropdown component that positions itself independently
-const ModelDropdown = ({ 
-  selectedModel, 
-  handleModelSelect, 
-  buttonRef 
-}: { 
-  selectedModel: string, 
-  handleModelSelect: (model: string) => void,
-  buttonRef: React.RefObject<HTMLDivElement>
-}) => {
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  // Calculate position based on button location
-  useEffect(() => {
-    if (buttonRef.current && dropdownRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      
-      // Position the dropdown above the button
-      setPosition({
-        top: buttonRect.top - dropdownRef.current.offsetHeight - 10,
-        left: buttonRect.right - dropdownRef.current.offsetWidth
-      });
-    }
-  }, [buttonRef]);
-  
-  return (
-    <div 
-      ref={dropdownRef}
-      className="fixed bg-[#1c2128] border border-[#30363d] rounded-lg shadow-lg overflow-hidden z-[9999] max-h-[300px] overflow-y-auto w-64"
-      style={{ 
-        top: `${position.top}px`, 
-        left: `${position.left}px` 
-      }}
-    >
-      <div className="p-2">
-        <div className="text-xs font-medium text-[#7d8590] px-2 py-1">Model</div>
-        <button
-          onClick={() => handleModelSelect('gemini')}
-          className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'gemini' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
-        >
-          <div className="flex items-center">
-            <span>Gemini</span>
-            {selectedModel === 'gemini' && (
-              <span className="ml-1 text-xs bg-blue-500/20 text-blue-400 px-1.5 rounded">New</span>
-            )}
-          </div>
-        </button>
-        <button
-          onClick={() => handleModelSelect('deepseek')}
-          className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'deepseek' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
-        >
-          <div className="flex items-center">
-            <span>DeepSeek-Reasoner (R1)</span>
-          </div>
-        </button>
-        <button
-          onClick={() => handleModelSelect('qwen-2.5')}
-          className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'qwen-2.5' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
-        >
-          <div className="flex items-center">
-            <span>Qwen 2.5</span>
-          </div>
-        </button>
-        <button
-          onClick={() => handleModelSelect('qwq-32b')}
-          className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'qwq-32b' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
-        >
-          <div className="flex items-center">
-            <span>QwQ 32B</span>
-            <span className="ml-1 text-xs bg-purple-500/20 text-purple-400 px-1.5 rounded">New</span>
-          </div>
-        </button>
+}
+  // Model dropdown component
+  const ModelDropdown: React.FC<{ 
+    selectedModel: string; 
+    handleModelSelect: (model: string) => void; 
+    buttonRef: React.RefObject<HTMLDivElement>; 
+  }> = ({ 
+    selectedModel, 
+    handleModelSelect, 
+    buttonRef 
+  }) => {
+    const [position, setPosition] = useState({ top: 0, left: 0 });
+    const dropdownRef = useRef<HTMLDivElement | null>(null);
+    
+    // Calculate position based on button location
+    useEffect(() => {
+      if (buttonRef.current && dropdownRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect();
+        
+        // Position the dropdown above the button
+        setPosition({
+          top: buttonRect.top - dropdownRef.current.offsetHeight - 10,
+          left: buttonRect.right - dropdownRef.current.offsetWidth
+        });
+      }
+    }, [buttonRef]);
+    
+    return (
+      <div 
+        ref={dropdownRef}
+        className="fixed bg-[#1c2128] border border-[#30363d] rounded-lg shadow-lg overflow-hidden z-[9999] max-h-[300px] overflow-y-auto w-64"
+        style={{ 
+          top: `${position.top}px`, 
+          left: `${position.left}px` 
+        }}
+      >
+        <div className="p-2">
+          <div className="text-xs font-medium text-[#7d8590] px-2 py-1">Model</div>
+          <button
+            onClick={() => handleModelSelect('gemini')}
+            className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'gemini' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
+          >
+            <div className="flex items-center">
+              <span>Gemini</span>
+              {selectedModel === 'gemini' && (
+                <span className="ml-1 text-xs bg-blue-500/20 text-blue-400 px-1.5 rounded">New</span>
+              )}
+            </div>
+          </button>
+          <button
+            onClick={() => handleModelSelect('deepseek')}
+            className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'deepseek' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
+          >
+            <div className="flex items-center">
+              <span>DeepSeek-Reasoner (R1)</span>
+            </div>
+          </button>
+          <button
+            onClick={() => handleModelSelect('qwen-2.5')}
+            className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'qwen-2.5' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
+          >
+            <div className="flex items-center">
+              <span>Qwen 2.5</span>
+            </div>
+          </button>
+          <button
+            onClick={() => handleModelSelect('qwq-32b')}
+            className={`w-full text-left px-2 py-1.5 text-sm rounded ${selectedModel === 'qwq-32b' ? 'bg-[#388bfd]/10 text-[#388bfd]' : 'text-[#e6edf3] hover:bg-[#21262d]'}`}
+          >
+            <div className="flex items-center">
+              <span>QwQ 32B</span>
+              <span className="ml-1 text-xs bg-purple-500/20 text-purple-400 px-1.5 rounded">New</span>
+            </div>
+          </button>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
