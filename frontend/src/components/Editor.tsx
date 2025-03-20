@@ -77,14 +77,14 @@ export const Editor: React.FC = () => {
             Select a file from the explorer or create a new one to start your coding journey with AI-powered assistance.
           </p>
           <div className="space-y-3 mt-6">
-            <button 
+            <button
               onClick={handleOpenFolder}
               className="w-full px-3 py-2 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-600 hover:to-blue-700 rounded-lg border border-blue-500/30 text-white font-medium transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2 shadow-lg shadow-blue-900/20"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
               <span>Open Folder</span>
             </button>
-            <button 
+            <button
               onClick={handleNewFile}
               className="w-full px-3 py-2 bg-black/40 hover:bg-black/50 rounded-lg border border-white/20 text-white font-medium transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2"
             >
@@ -95,16 +95,16 @@ export const Editor: React.FC = () => {
           <div className="mt-8 text-xs text-white/50">
             <p>Xen AI is ready to assist with your coding tasks</p>
           </div>
-          
+
           {/* Hidden file input for folder selection */}
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFolderSelected} 
-            style={{ display: 'none' }} 
-            webkitdirectory="" 
-            directory="" 
-            multiple 
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFolderSelected}
+            style={{ display: 'none' }}
+            webkitdirectory=""
+            directory=""
+            multiple
             {...{} as CustomInputProps} // Type assertion to handle non-standard attributes
           />
         </div>
@@ -115,46 +115,70 @@ export const Editor: React.FC = () => {
   return (
     <div className="h-full w-full relative">
       <MonacoEditor
-        height="100%"
-        width="100%"
-        theme={theme === 'github-dark' ? 'xen-dark' : 
-               theme === 'github-light' ? 'github-light' : 
-               theme === 'vs-dark' ? 'vs-dark' : 
-               theme === 'vs-light' ? 'vs-light' : 
-               theme === 'monokai' ? 'monokai' : 'xen-dark'}
-        language={currentFile.language}
-        value={currentFile.content}
-        onChange={handleEditorChange}
-        options={{
-          minimap: { enabled: true },
-          fontSize: fontSize,
-          wordWrap: wordWrap ? 'on' : 'off',
-          automaticLayout: true,
-          scrollBeyondLastLine: false,
-          lineNumbers: 'on',
-          glyphMargin: false,
-          folding: true,
-          lineDecorationsWidth: 0,
-          lineNumbersMinChars: 3,
-          padding: { top: 0, bottom: 8 },
-          renderLineHighlight: 'all',
-          scrollbar: {
-            useShadows: false,
-            verticalScrollbarSize: 10,
-            vertical: 'visible',
-            horizontal: 'visible'
-          }
-        }}
+    height="100%"
+    width="100%"
+    theme={theme === 'github-dark' ? 'xen-dark' :
+        theme === 'github-light' ? 'github-light' :
+        theme === 'vs-dark' ? 'vs-dark' :
+        theme === 'vs-light' ? 'vs-light' :
+        theme === 'monokai' ? 'monokai' : 'xen-dark'}
+    language={currentFile.language}
+    value={currentFile.content}
+    onChange={handleEditorChange}
+    options={{
+        minimap: {
+            enabled: true,
+            scale: 1.5,                      
+            showSlider: "always",         
+            renderCharacters: true,         
+            maxColumn: 120
+        },
+        scrollbar: {
+            useShadows: true,                
+            verticalScrollbarSize: 12,       
+            horizontalScrollbarSize: 12,     
+            vertical: 'auto',                
+            horizontal: 'auto'
+        },
+        acceptSuggestionOnEnter: 'smart',
+        fontSize: fontSize,
+        wordWrap: wordWrap ? 'on' : 'off',
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        lineNumbers: 'on',
+        glyphMargin: false,
+        folding: true,
+        lineDecorationsWidth: 0,
+        dragAndDrop: true,
+        lineNumbersMinChars: 3,
+        padding: { top: 0, bottom: 8 },
+        renderLineHighlight: 'all',
+        cursorBlinking: "expand",
+        cursorSmoothCaretAnimation: "on",
+        formatOnPaste: true,
+        formatOnType: true,
+        selectionHighlight: true,
+        inlineSuggest: { enabled: true },
+        occurrencesHighlight: "off",              
+        quickSuggestions: {
+            other: true,
+            comments: true,
+            strings: true
+        },
+        parameterHints: { enabled: true },
+        suggestOnTriggerCharacters: true,
+        lightbulb: { enabled: true }
+    }}
         beforeMount={(monaco) => {
           // Apply all custom Monaco themes
           defineMonacoThemes(monaco);
         }}
       />
       {showCodeDiff && (
-        <InlineCodeDiffViewer 
-          diffs={codeDiffs} 
-          onAccept={acceptCodeChanges} 
-          onReject={rejectCodeChanges} 
+        <InlineCodeDiffViewer
+          diffs={codeDiffs}
+          onAccept={acceptCodeChanges}
+          onReject={rejectCodeChanges}
         />
       )}
     </div>
