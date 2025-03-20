@@ -69,7 +69,14 @@ async def gemini_generate_review(code: str) -> str:
 
 
     try:
-        prompt = f"{SYSTEM_INSTRUCTION}\n\nUser question: {code}"
+        # Check if the input looks like code or a question
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            prompt = f"{SYSTEM_INSTRUCTION}\n\nReview the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            prompt = f"{SYSTEM_INSTRUCTION}\n\nUser question: {code}"
+        
+        # Use the correct gemni_model instance for generating review
         response = gemni_model.generate_content([prompt])
         return response.text
     except Exception as e:
@@ -89,7 +96,13 @@ async def qwen_generate_review(code: str) -> str:
     client=Groq(api_key=GROQ_API_KEY)
 
     try:
-        user_content = f"User question: {code}"
+        # Check if the input looks like code or a question
+        user_content = ""
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            user_content = f"Review the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            user_content = f"User question: {code}"
             
         response = client.chat.completions.create(
             messages = [
@@ -121,8 +134,13 @@ async def deepseek_generate_review(code: str) -> str:
     client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://openrouter.ai/api/v1")
 
     try:
-
-        user_content = f"User question: {code}"
+        # Check if the input looks like code or a question
+        user_content = ""
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            user_content = f"Review the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            user_content = f"User question: {code}"
             
         response = client.chat.completions.create(
             model="deepseek/deepseek-r1:free",
@@ -156,7 +174,13 @@ async def qwq_generate_review(code: str) -> str:
     client = OpenAI(api_key=OPENROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
 
     try:
-        user_content = f"User question: {code}"
+        # Check if the input looks like code or a question
+        user_content = ""
+        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
+            user_content = f"Review the following code:\n```python\n{code}\n```"
+        else:
+            # Treat as a general programming question
+            user_content = f"User question: {code}"
             
         response = client.chat.completions.create(
             model="anthropic/claude-3-opus:free",  # Using Claude 3 Opus via OpenRouter for QwQ

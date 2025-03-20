@@ -16,7 +16,8 @@ async def ai_service_status():
     }
 
 @router.post("/get-review")
-async def review_code(payload: CodeRequest):
+async def review_code(payload: CodeRequest,
+                      user_data:dict=Depends(verify_firebase_token)):
     """Route to process AI code review."""
     try:
         # Get the review from the AI service
