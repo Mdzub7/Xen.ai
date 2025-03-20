@@ -1,8 +1,10 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { useEditorStore } from '../store/editorStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { TypeAnimation } from 'react-type-animation';
 import InlineCodeDiffViewer from './InlineCodeDiffViewer';
+import { defineMonacoThemes } from './MonacoThemes';
 
 // Add this interface to handle the non-standard webkitdirectory attribute
 interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -12,15 +14,24 @@ interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Editor: React.FC = () => {
   const { currentFile, updateFile, showCodeDiff, codeDiffs, acceptCodeChanges, rejectCodeChanges } = useEditorStore();
+  const { theme, fontSize, wordWrap, autoSave } = useSettingsStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEditorChange = useCallback(
     (value: string | undefined) => {
       if (currentFile && value !== undefined) {
-        updateFile(currentFile.id, value);
+        // If auto-save is enabled, update the file immediately
+        if (autoSave) {
+          updateFile(currentFile.id, value);
+        } else {
+          // Store the content temporarily but don't save it
+          // This would typically be implemented with a debounce function
+          // or saved when the user explicitly clicks a save button
+          currentFile.content = value;
+        }
       }
     },
-    [currentFile, updateFile]
+    [currentFile, updateFile, autoSave]
   );
 
   const { createNewFile, createNewFolder, setCurrentView } = useEditorStore();
@@ -106,14 +117,18 @@ export const Editor: React.FC = () => {
       <MonacoEditor
         height="100%"
         width="100%"
-        theme="xen-dark"
+        theme={theme === 'github-dark' ? 'xen-dark' : 
+               theme === 'github-light' ? 'github-light' : 
+               theme === 'vs-dark' ? 'vs-dark' : 
+               theme === 'vs-light' ? 'vs-light' : 
+               theme === 'monokai' ? 'monokai' : 'xen-dark'}
         language={currentFile.language}
         value={currentFile.content}
         onChange={handleEditorChange}
         options={{
           minimap: { enabled: true },
-          fontSize: 14,
-          wordWrap: 'on',
+          fontSize: fontSize,
+          wordWrap: wordWrap ? 'on' : 'off',
           automaticLayout: true,
           scrollBeyondLastLine: false,
           lineNumbers: 'on',
@@ -131,32 +146,8 @@ export const Editor: React.FC = () => {
           }
         }}
         beforeMount={(monaco) => {
-          monaco.editor.defineTheme('xen-dark', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [
-              { token: 'comment', foreground: '#7d8590' },
-              { token: 'keyword', foreground: '#ff7b72' },
-              { token: 'string', foreground: '#a5d6ff' },
-              { token: 'number', foreground: '#79c0ff' },
-              { token: 'type', foreground: '#ff7b72' }
-            ],
-            colors: {
-              'editor.background': '#0A192F',
-              'editor.foreground': '#e6edf3',
-              'editorCursor.foreground': '#e6edf3',
-              'editor.lineHighlightBackground': '#0F1A2B',
-              'editorLineNumber.foreground': '#7d8590',
-              'editor.selectionBackground': '#2d4f7c',
-              'editor.inactiveSelectionBackground': '#1a2333',
-              'editorIndentGuide.background': '#1a2333',
-              'scrollbarSlider.background': '#1a2333',
-              'scrollbarSlider.hoverBackground': '#243044',
-              'scrollbarSlider.activeBackground': '#243044',
-              'minimap.background': '#0A192F',
-              'minimap.foregroundOpacity': '#243044'
-            }
-          });
+          // Apply all custom Monaco themes
+          defineMonacoThemes(monaco);
         }}
       />
       {showCodeDiff && (

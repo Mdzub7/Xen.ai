@@ -18,6 +18,7 @@ import { NotFoundPage } from './components/NotFoundPage';
 import { SidePanel } from './components/SidePanel';
 import CodeDiffViewer from './components/CodeDiffViewer';
 import ForgotPassword from './components/ForgotPassowrd';
+import { ThemeProvider } from './components/ThemeProvider';
 
 const Layout = () => {
   const { 
@@ -86,16 +87,18 @@ const App: React.FC = () => {
   }, [isAuthenticated]);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/v1/*" element={<Layout />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/v1/*" element={<Layout />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 };
 

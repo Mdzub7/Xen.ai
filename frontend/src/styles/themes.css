@@ -1,0 +1,81 @@
+/* Theme CSS Variables */
+
+/* GitHub Dark Theme */
+.github-dark {
+  --color-bg-canvas: #0d1117;
+  --color-bg-canvas-subtle: #161b22;
+  --color-bg-canvas-inset: #010409;
+  --color-bg-default: #0d1117;
+  --color-bg-overlay: #161b22;
+  --color-border-default: #30363d;
+  --color-border-muted: #21262d;
+  --color-fg-default: #e6edf3;
+  --color-fg-muted: #7d8590;
+  --color-fg-subtle: #6e7681;
+  --color-accent-fg: #58a6ff;
+  --color-accent-emphasis: #1f6feb;
+}
+
+/* GitHub Light Theme */
+.github-light {
+  --color-bg-canvas: #ffffff;
+  --color-bg-canvas-subtle: #f6f8fa;
+  --color-bg-canvas-inset: #f6f8fa;
+  --color-bg-default: #ffffff;
+  --color-bg-overlay: #ffffff;
+  --color-border-default: #d0d7de;
+  --color-border-muted: #d8dee4;
+  --color-fg-default: #24292f;
+  --color-fg-muted: #57606a;
+  --color-fg-subtle: #6e7781;
+  --color-accent-fg: #0969da;
+  --color-accent-emphasis: #0969da;
+}
+
+/* VS Dark Theme */
+.vs-dark {
+  --color-bg-canvas: #1e1e1e;
+  --color-bg-canvas-subtle: #252526;
+  --color-bg-canvas-inset: #1e1e1e;
+  --color-bg-default: #1e1e1e;
+  --color-bg-overlay: #252526;
+  --color-border-default: #454545;
+  --color-border-muted: #333333;
+  --color-fg-default: #cccccc;
+  --color-fg-muted: #999999;
+  --color-fg-subtle: #777777;
+  --color-accent-fg: #007acc;
+  --color-accent-emphasis: #007acc;
+}
+
+/* VS Light Theme */
+.vs-light {
+  --color-bg-canvas: #ffffff;
+  --color-bg-canvas-subtle: #f3f3f3;
+  --color-bg-canvas-inset: #f3f3f3;
+  --color-bg-default: #ffffff;
+  --color-bg-overlay: #ffffff;
+  --color-border-default: #d4d4d4;
+  --color-border-muted: #e4e4e4;
+  --color-fg-default: #333333;
+  --color-fg-muted: #616161;
+  --color-fg-subtle: #777777;
+  --color-accent-fg: #007acc;
+  --color-accent-emphasis: #007acc;
+}
+
+/* Monokai Theme */
+.monokai {
+  --color-bg-canvas: #272822;
+  --color-bg-canvas-subtle: #2d2e27;
+  --color-bg-canvas-inset: #1e1f1c;
+  --color-bg-default: #272822;
+  --color-bg-overlay: #2d2e27;
+  --color-border-default: #4e4e4e;
+  --color-border-muted: #3c3d37;
+  --color-fg-default: #f8f8f2;
+  --color-fg-muted: #a6a6a6;
+  --color-fg-subtle: #75715e;
+  --color-accent-fg: #a6e22e;
+  --color-accent-emphasis: #f92672;
+}
