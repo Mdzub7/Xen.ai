@@ -9,8 +9,11 @@ import {
   signOut,
   UserCredential,
   sendPasswordResetEmail,
+  setPersistence,
+  browserSessionPersistence,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { useNavigate } from "react-router-dom"; 
 import { getStorage } from "firebase/storage";
 
 // Validate env variables
@@ -40,6 +43,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+
+setPersistence(auth,browserSessionPersistence).then(()=>{
+console.log("session persistance");
+}).catch((error)=>{
+  console.log(error);
+})
 
 export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();
@@ -86,10 +96,15 @@ export const loginWithGithub = async (): Promise<UserCredential> => {
   }
 };
 
-// Sign out
 export const logOut = async (): Promise<void> => {
   try {
-    return await signOut(auth);
+    // Clear local storage and session
+    localStorage.removeItem("user");
+    sessionStorage.clear();
+
+    // Firebase sign out
+    await signOut(auth);
+
   } catch (error) {
     console.error("Logout error:", error);
     throw error;
@@ -99,8 +114,11 @@ export const logOut = async (): Promise<void> => {
 export const sendResetEmail = async (auth: any, email: string) => {
   try {
     await sendPasswordResetEmail(auth, email);
-    console.log("Password reset email sent successfully");
   } catch (error) {
-    console.error("Error sending password reset email:", error);
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error("An unknown error occurred");
+    }
   }
 };

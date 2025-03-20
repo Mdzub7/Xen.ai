@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play, FileText } from "lucide-react";
 import { useEditorStore } from "../store/editorStore";
 import { runCode } from '../utils/runJudge0';
-import ExecutionTimeWidget from "./ExecutionTimeWidget";
+import ExecutionTimeWidget from "./widget/ExecutionTimeWidget";
 
 // Define terminal commands and their descriptions for help
 const COMMANDS = {

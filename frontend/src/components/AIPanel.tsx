@@ -5,7 +5,7 @@ import { Message, File } from "../types";
 import MarkdownWithCodeButtons from "./Markdown"; // Import the new component
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { LoadingSpinner } from "./widget/LoadingSpinner";
 import { getFirebaseToken } from "../auth/firebaseToken";
 import "highlight.js/styles/github-dark.css";
 import "../styles/codeBlock.css";

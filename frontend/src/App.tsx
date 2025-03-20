@@ -1,22 +1,17 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import { ActivityBar } from './components/ActivityBar';
 import { Editor } from './components/Editor';
 import { Toolbar } from './components/Toolbar';
 import { AIPanel } from './components/AIPanel';
 import { Terminal } from './components/Terminal';
 import { StatusBar } from './components/StatusBar';
-import { SearchView } from './components/views/SearchView';
-import { SettingsView } from './components/views/SettingsView';
-import { ProfileView } from './components/views/ProfileView';
-import { FileExplorer } from './components/FileExplorer';
 import { SignUp } from './components/auth/SignUp';
 import { useEditorStore } from './store/editorStore';
 import { Login } from './components/auth/Login';
 import { Home } from './components/Home';
 import { NotFoundPage } from './components/NotFoundPage';
 import { SidePanel } from './components/SidePanel';
-import CodeDiffViewer from './components/CodeDiffViewer';
 import ForgotPassword from './components/ForgotPassowrd';
 import { ThemeProvider } from './components/ThemeProvider';
 
@@ -25,26 +20,8 @@ const Layout = () => {
     isAIPanelOpen, 
     currentView, 
     currentFile,
-    showCodeDiff, 
-    codeDiffs, 
-    acceptCodeChanges, 
-    rejectCodeChanges 
   } = useEditorStore();
 
-  // const renderSidePanel = () => {
-  //   switch (currentView) {
-  //     case 'explorer':
-  //       return <FileExplorer />;
-  //     case 'search':
-  //       return <SearchView />;
-  //     case 'settings':
-  //       return <SettingsView />;
-  //     case 'profile':
-  //       return <ProfileView />;
-  //     default:
-  //       return null;
-  //   }
-  // };
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">

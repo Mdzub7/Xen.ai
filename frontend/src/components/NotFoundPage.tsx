@@ -30,9 +30,7 @@ export const NotFoundPage = () => {
         {/* Button with enhanced styling */}
         <button
           onClick={() => navigate('/')}
-          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg 
-                   hover:from-blue-600 hover:to-purple-700 transform hover:-translate-y-1 
-                   transition-all duration-300 shadow-lg font-medium"
+          className="w-full bg-white text-black font-medium p-3 rounded-lg hover:bg-white/90 transition-colors flex justify-center items-center"
         >
           Return Home
         </button>

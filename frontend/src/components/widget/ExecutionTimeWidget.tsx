@@ -1,6 +1,6 @@
 import React from "react";
 import { Clock } from "lucide-react";
-import { useEditorStore } from "../store/editorStore";
+import { useEditorStore } from "../../store/editorStore";
 
 const ExecutionTimeWidget: React.FC = () => {
   const executionTime = useEditorStore((state) => state.executionTime);

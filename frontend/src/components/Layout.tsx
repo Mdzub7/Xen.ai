@@ -5,10 +5,7 @@ import { Terminal } from './Terminal';
 import { AIPanel } from './AIPanel';
 import { ActivityBar } from './ActivityBar';
 import { useEditorStore } from '../store/editorStore';
-import { SearchView } from './views/SearchView';
-import { SettingsView } from './views/SettingsView';
-import { ProfileView } from './views/ProfileView';
-import { Toolbar } from './Toolbar';
+import { SidePanel } from './SidePanel';
 
 
 const Layout: React.FC = () => {
@@ -23,22 +20,22 @@ const Layout: React.FC = () => {
     }
   }, []);
 
-  const renderSidePanel = () => {
-    switch (currentView) {
-      case 'explorer':
-        return <FileExplorer />;
-      case 'search':
-        return <SearchView />;
-      case 'settings':
-        return <SettingsView />;
-      case 'profile':
-        return <ProfileView />;
-      case 'logout':
-        return null;
-      default:
-        return null;
-    }
-  };
+  // const renderSidePanel = () => {
+  //   switch (currentView) {
+  //     case 'explorer':
+  //       return <FileExplorer />;
+  //     case 'search':
+  //       return <SearchView />;
+  //     case 'settings':
+  //       return <SettingsView />;
+  //     case 'profile':
+  //       return <ProfileView />;
+  //     case 'logout':
+  //       return null;
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
@@ -50,7 +47,7 @@ const Layout: React.FC = () => {
       {/* Side Panel */}
       {currentView !== 'none' && (
         <div className="fixed left-12 top-0 bottom-0 w-60 border-r border-white/10 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black z-10">
-          {renderSidePanel()}
+          <SidePanel/>
         </div>
       )}
 

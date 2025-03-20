@@ -12,12 +12,14 @@ import { useEditorStore } from '../store/editorStore';
 import type { View } from '../types';
 import { logOut } from './auth/firebase';
 import { useNavigate } from "react-router-dom";
+import ConfirmLogout from "./widget/confirmLogout"
 
 type AIView = Extract<View, 'ai' | 'debug'>;
 
 export const ActivityBar: React.FC = () => {
   const navigate = useNavigate();
   const { currentView, setCurrentView, isAIPanelOpen, toggleAIPanel } = useEditorStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [logoutFeedback, setLogoutFeedback] = useState(false);
 
   const handleViewChange = (view: View) => {
@@ -34,11 +36,14 @@ export const ActivityBar: React.FC = () => {
   };
 
   const handleLogout = async () => {
+    setIsModalOpen(true);  // Open the confirmation modal
+  };
+
+  const confirmLogout = async () => {
+    setIsModalOpen(false);
+    setLogoutFeedback(true);
+
     try {
-      // Show visual feedback
-      setLogoutFeedback(true);
-      
-      // Delay logout slightly to allow feedback to be seen
       setTimeout(async () => {
         await logOut();
         navigate("/");
@@ -48,6 +53,12 @@ export const ActivityBar: React.FC = () => {
       setLogoutFeedback(false);
     }
   };
+
+  const cancelLogout = () => {
+    setIsModalOpen(false);  // Close the modal on cancel
+  };
+
+  
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black text-white/70">
@@ -82,17 +93,25 @@ export const ActivityBar: React.FC = () => {
         <div className="flex-1" />  {/* This creates space between top and bottom buttons */}
         
         <button
-          className={`p-2 rounded transition-colors duration-300 ${
-            logoutFeedback 
-              ? 'bg-blue-1000 text-white' 
-              : 'hover:bg-[#21262d] hover:text-[#e6edf3]'
-          }`}
-          onClick={handleLogout}
-          title="Logout"
-          disabled={logoutFeedback}
-        >
-          {logoutFeedback ? <Check size={24} /> : <LogOut size={24} />}
-        </button>
+        className={`p-2 rounded transition-colors duration-300 ${
+          logoutFeedback
+            ? "bg-blue-1000 text-white"
+            : "hover:bg-[#21262d] hover:text-[#e6edf3]"
+        }`}
+        onClick={handleLogout}
+        title="Logout"
+        disabled={logoutFeedback}
+      >
+        {logoutFeedback ? <Check size={24} /> : <LogOut size={24} />}
+      </button>
+
+      {/* Modal */}
+      <ConfirmLogout
+        isOpen={isModalOpen}
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+        message="Are you sure you want to logout?"
+      />
         
         <button
           className={`p-2 rounded hover:bg-[#21262d] hover:text-[#e6edf3] ${
