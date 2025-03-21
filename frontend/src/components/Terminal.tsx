@@ -141,7 +141,6 @@ export const Terminal = () => {
         return null; // No output needed
 
       case "help":
-      case "--help":
         return Object.entries(COMMANDS)
           .map(([cmd, desc]) => `${cmd.padEnd(10)} - ${desc}`)
           .join("\n");
@@ -173,7 +172,7 @@ export const Terminal = () => {
         return "Dummy User";
 
       case "version":
-        return "Terminal v2.0.3";
+        return "Terminal v2.5.3";
 
       default:
         return `'${cmd}' is not recognized as a valid command.\nType 'help' to see available commands.`;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ClipboardCopy, Check, Play } from 'lucide-react';
+import { ClipboardCopy, Check, CheckSquare } from 'lucide-react';
 import rehypeRaw from 'rehype-raw';
 import { useEditorStore } from '../store/editorStore';
 
@@ -66,7 +66,7 @@ const MarkdownWithCodeButtons: React.FC<MarkdownWithCodeButtonsProps> = ({ conte
                     className="p-1 rounded bg-blue-600 hover:bg-blue-500 text-white"
                     title="Apply code"
                   >
-                    <Play size={16} />
+                    <CheckSquare size={16} />
                   </button>
                 </div>
                 <SyntaxHighlighter

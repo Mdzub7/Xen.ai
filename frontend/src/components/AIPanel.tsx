@@ -208,31 +208,37 @@ export const AIPanel: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          code: messageContent, // Send the full content with file code
+          code: messageContent,  // Send the full content with file code
           service_choice: selectedModel,
         }),
       });
-  
+    
       if (!response.ok) throw new Error("Failed to get AI response");
-  
+    
       // Process the response
       const data = await response.json();
       const responseContent = data.response || "";
-      
+    
       // Only add the assistant message when we have content
       if (responseContent) {
+        // Add a delay of 3-4 seconds before displaying the message
+        await new Promise((resolve) => setTimeout(resolve, 3000));  // 3 sec delay
+    
         addMessage({
           id: Math.random().toString(36).substr(2, 9),
           role: "assistant",
           content: responseContent,
           timestamp: new Date().toISOString(),
         });
-        
+    
         // Scroll to the bottom to show new content
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     } catch (error) {
       console.error("Error:", error);
+    
+      // Show error message with delay
+      await new Promise((resolve) => setTimeout(resolve, 2500));  
       addMessage({
         id: Math.random().toString(36).substr(2, 9),
         role: "assistant",
@@ -242,7 +248,7 @@ export const AIPanel: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }    
 
   return (
     <div className="fixed right-0 top-0 h-[97.3vh] w-[30vw] flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-l border-white/10 shadow-lg z-50">
@@ -319,31 +325,37 @@ export const AIPanel: React.FC = () => {
         )}
 
         {/* Messages */}
-        {isAuthenticated && messages.length > 0 && (
-          <div className="px-4 py-6">
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
-                <div className={`rounded-lg p-6 shadow-md ${message.role === "user" ? "bg-[#2d333b] text-[#e6edf3] max-w-[85%]" : "bg-[#22272e] text-[#e6edf3] max-w-[90%]"}`}>
-                  {message.content ? (
-                    <MarkdownWithCodeButtons content={message.content} />
-                  ) : (
-                    <div className="flex items-center space-x-3">
-                      <div className="loader"></div>
-                      <span className="text-gray-400">AI is thinking...</span>
-                    </div>
-                  )}
-                  <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-            {/* Only show the standalone loading spinner when there's no assistant message yet */}
-            {(isLoading || isReviewLoading) && messages.filter(m => m.role === "assistant").length === 0 && <LoadingSpinner />}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
+        {isAuthenticated && (
+  <div className="px-4 py-6">
+    {messages.map((message) => (
+      <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
+        <div className={`rounded-lg p-6 shadow-md ${message.role === "user" ? "bg-[#2d333b] text-[#e6edf3] max-w-[85%]" : "bg-[#22272e] text-[#e6edf3] max-w-[90%]"}`}>
+          {/* Show message content if available, else show spinner */}
+          {message.content ? (
+            <MarkdownWithCodeButtons content={message.content} />
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          )}
+          <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
+            {new Date(message.timestamp).toLocaleTimeString()}
+          </p>
+        </div>
       </div>
+    ))}
+
+    {/* Always show spinner when loading */}
+    {(isLoading || isReviewLoading) && (
+      <div className="flex justify-left items-center my-6">
+        <LoadingSpinner />
+      </div>
+    )}
+
+    <div ref={messagesEndRef} />
+  </div>
+)}
+</div>
 
       {/* Input Area - Redesigned with isolated bottom toolbar */}
       {isAuthenticated && (
@@ -477,9 +489,7 @@ export const AIPanel: React.FC = () => {
   );
 };
 
-// Add this component at the end of the file, before the closing export statement
 
-// Model dropdown component that positions itself independently
 const ModelDropdown = ({ 
   selectedModel, 
   handleModelSelect, 

@@ -7,48 +7,8 @@ load_dotenv()
 
 
 SYSTEM_INSTRUCTION = """
-As an expert code reviewer with 7+ years of development experience, your role is to analyze, review, and improve code written by developers. You should also answer programming-related questions but decline to answer non-programming queries. Focus on the following key areas:
-
-1. **Code Quality**: Ensure the code is clean, maintainable, and well-structured.
-2. **Best Practices**: Suggest industry-standard coding practices.
-3. **Efficiency & Performance**: Identify areas to optimize execution time and resource usage.
-4. **Space & Time Complexity**: Analyze the algorithmic complexity of the code and suggest improvements.
-5. **Error Detection**: Spot potential bugs, security risks, and logical flaws.
-6. **Scalability**: Advise on making the code adaptable for future growth.
-7. **Readability & Maintainability**: Ensure that the code is easy to understand and modify.
-8. After Each Subheading Leave few lines as gap so that the documentation looks easy to comprehend
-
-Review Guidelines:
-1. **Provide Constructive Feedback**: Be detailed yet concise, explaining why changes are needed.
-2. **Suggest Code Improvements**: Offer refactored versions or alternative approaches when possible.
-3. **Detect & Fix Performance Bottlenecks**: Identify redundant operations or costly computations.
-4. **Compare Complexity**: For any suggested improvements, explain how they improve the space and time complexity.
-5. **Ensure Security Compliance**: Look for common vulnerabilities (e.g., SQL injection, XSS, CSRF).
-6. **Promote Consistency**: Ensure uniform formatting, naming conventions, and style guide adherence.
-7. **Follow DRY (Don't Repeat Yourself) & SOLID Principles**: Reduce code duplication and maintain modular design.
-8. **Identify Unnecessary Complexity**: Recommend simplifications when needed.
-9. **Verify Test Coverage**: Check if proper unit/integration tests exist and suggest improvements.
-10. **Ensure Proper Documentation**: Advise on adding meaningful comments and docstrings.
-11. **Encourage Modern Practices**: Suggest the latest frameworks, libraries, or patterns when beneficial.
-
-Provide feedback in a structured format, highlighting issues, recommended fixes, and improvements. Use ` ` delimiters only for the code itself, not for commentary or other blocks.
-
-Important Guidelines for Handling Queries:
-1. **Answer Programming Questions**: Respond to questions about programming languages, frameworks, algorithms, development practices, debugging, and software engineering concepts.
-2. **Decline Non-Programming Queries**: Politely decline to answer questions about weather, news, personal information, politics, entertainment, or other non-programming topics. For example: "I'm designed to help with programming and code-related questions. I can't provide information about weather, news, or other non-programming topics."
-3. **Maintain Format**: Always maintain the same structured format for code reviews and programming answers.
-
-You will be provided with code snippets surrounded by triple quotes. Here is an example placeholder:
-```
-# Example code snippet
-def example_function(x):
-    if x &gt; 10:
-        return True
-    else:
-        return False
-```
-
-Please review the provided code and apply the review guidelines above.
+you are an AI chatBot who helps people in giving code and solving their problems, your response will be directly shown int the text,
+so give response like a chat. Also Explain the modifications done. if the code is correct just say its correct and give small explanation of the program.
 
 If the user asks a programming-related question instead of providing code for review, answer their question helpfully. If the user asks about non-programming topics (like weather, news, personal information, politics, entertainment), politely decline with: "I'm designed to help with programming and code-related questions. I can't provide information about [topic]."
 """
@@ -69,14 +29,7 @@ async def gemini_generate_review(code: str) -> str:
 
 
     try:
-        # Check if the input looks like code or a question
-        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
-            prompt = f"{SYSTEM_INSTRUCTION}\n\nReview the following code:\n```python\n{code}\n```"
-        else:
-            # Treat as a general programming question
-            prompt = f"{SYSTEM_INSTRUCTION}\n\nUser question: {code}"
-        
-        # Use the correct gemni_model instance for generating review
+        prompt = f"{SYSTEM_INSTRUCTION}\n\nUser question: {code}"
         response = gemni_model.generate_content([prompt])
         return response.text
     except Exception as e:
@@ -96,13 +49,7 @@ async def qwen_generate_review(code: str) -> str:
     client=Groq(api_key=GROQ_API_KEY)
 
     try:
-        # Check if the input looks like code or a question
-        user_content = ""
-        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
-            user_content = f"Review the following code:\n```python\n{code}\n```"
-        else:
-            # Treat as a general programming question
-            user_content = f"User question: {code}"
+        user_content = f"User question: {code}"
             
         response = client.chat.completions.create(
             messages = [
@@ -134,13 +81,8 @@ async def deepseek_generate_review(code: str) -> str:
     client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://openrouter.ai/api/v1")
 
     try:
-        # Check if the input looks like code or a question
-        user_content = ""
-        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
-            user_content = f"Review the following code:\n```python\n{code}\n```"
-        else:
-            # Treat as a general programming question
-            user_content = f"User question: {code}"
+
+        user_content = f"User question: {code}"
             
         response = client.chat.completions.create(
             model="deepseek/deepseek-r1:free",
@@ -174,13 +116,8 @@ async def qwq_generate_review(code: str) -> str:
     client = OpenAI(api_key=OPENROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
 
     try:
-        # Check if the input looks like code or a question
-        user_content = ""
-        if code.strip().startswith("def ") or code.strip().startswith("class ") or code.strip().startswith("import ") or "```" in code or "{" in code or ";" in code:
-            user_content = f"Review the following code:\n```python\n{code}\n```"
-        else:
-            # Treat as a general programming question
-            user_content = f"User question: {code}"
+
+        user_content = f"User question: {code}"
             
         response = client.chat.completions.create(
             model="anthropic/claude-3-opus:free",  # Using Claude 3 Opus via OpenRouter for QwQ
