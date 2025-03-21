@@ -5,8 +5,11 @@ import { signUpWithEmail } from '../auth/firebase';
 import { loginWithGoogle } from './firebase';
 import { motion } from 'framer-motion';
 import { getAuth, sendEmailVerification } from "firebase/auth";
+import type { User } from "firebase/auth";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "./firebase"
 
 export const SignUp: React.FC = () => {
   const navigate = useNavigate();
@@ -37,26 +40,31 @@ export const SignUp: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
-    // Check if passwords match
+  
     if (formData.password !== confirmPassword) {
       toast.error("Passwords do not match");
       setIsLoading(false);
       return;
     }
-
+  
     try {
+      // Signup the user
       const userCredential = await signUpWithEmail(formData.email, formData.password);
       const user = userCredential.user;
-
+  
       if (user) {
+        await storeUserInFirestore(user);
+  
+        // Send email verification
         await sendEmailVerification(user);
-        toast.success("Verification Email sent. Please Check your Inbox", {
+        toast.success("Verification Email sent. Please check your inbox", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
         });
+  
+        // Redirect to login after 3 seconds
         setTimeout(() => navigate('/login'), 3000);
       } else {
         toast.error("User registration failed");
@@ -67,7 +75,27 @@ export const SignUp: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
 
+  const storeUserInFirestore = async (user:User) => {
+    if (!user) {
+      console.error('user object is missing');
+      return;
+    }
+    try{
+    const userRef = doc(db, "users", user.uid);
+  
+    await setDoc(userRef, {
+      email: user.email,
+      role: "normal",  // Default role
+      createdAt: new Date(),
+    });
+  }
+  catch(error){
+    console.log('error in storeUserInFirestone')
+  }
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black flex items-center justify-center p-4">
       <ToastContainer/>

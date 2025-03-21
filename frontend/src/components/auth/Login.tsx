@@ -8,6 +8,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { sendEmailVerification, getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { motion } from 'framer-motion';
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "./firebase";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +43,7 @@ export const Login: React.FC = () => {
         setShowResendVerification(true);
         return;
       }
+      const role=await getUserRole();
 
       toast.success("Login successful!", {
         position: "top-right",
@@ -56,9 +59,33 @@ export const Login: React.FC = () => {
     }
   };
 
+const getUserRole = async () => {
+  const user = auth.currentUser;
+  if (!user) return "normal";  
+
+  try {
+    const docRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const role = docSnap.data().role || "normal";
+      localStorage.setItem("userRole", role);  
+      return role;
+    }
+  } catch (error) {
+    console.error("Error fetching role:", error);
+    return "normal";  
+  }
+  
+  return "normal";
+};
+
+
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
+      const role = await getUserRole();
+      
       toast.success("Login successful!", {
         position: "top-right",
         autoClose: 3000,
