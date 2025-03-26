@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
-from ..controllers.ai_controller import get_review, get_available_services
-from ..models.code_model import CodeRequest
-from ..services.firebase_auth import verify_firebase_token
+from controllers.ai_controller import get_review, get_available_services
+from models.code_model import CodeRequest
+from services.firebase_auth import verify_firebase_token
 
 router = APIRouter()
 

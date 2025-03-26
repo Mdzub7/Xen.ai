@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict
 from firebase_admin import firestore
-from ..firebase_client import db
-from .auth_router import get_current_user
-from ..models.file_model import FileContent, FolderCreate
+from firebase_client import db
+from routes.auth_router import get_current_user
+from models.file_model import FileContent, FolderCreate
 
-app = APIRouter()
+router = APIRouter()
 
-@app.post("/files/")
+@router.post("/files/")
 async def create_file(file: FileContent, user: Dict = Depends(get_current_user)):
     user_id = user["uid"]
     doc_ref = db.collection("users").document(user_id).collection(file.folder).document(file.filename)
@@ -20,7 +20,7 @@ async def create_file(file: FileContent, user: Dict = Depends(get_current_user))
     return {"message": f"File '{file.filename}' created/updated successfully."}
 
 
-@app.get("/files/{folder}/{filename}")
+@router.get("/files/{folder}/{filename}")
 async def read_file(folder: str, filename: str, user: Dict = Depends(get_current_user)):
     user_id = user["uid"]
     doc_ref = db.collection("users").document(user_id).collection(folder).document(filename)
@@ -30,7 +30,7 @@ async def read_file(folder: str, filename: str, user: Dict = Depends(get_current
     return doc.to_dict()
 
 
-@app.get("/files/{folder}")
+@router.get("/files/{folder}")
 async def list_files(folder: str, user: Dict = Depends(get_current_user)):
     user_id = user["uid"]
     docs = db.collection("users").document(user_id).collection(folder).stream()
@@ -43,7 +43,7 @@ async def list_files(folder: str, user: Dict = Depends(get_current_user)):
     return {"files": files}
 
 
-@app.delete("/files/{folder}/{filename}")
+@router.delete("/files/{folder}/{filename}")
 async def delete_file(folder: str, filename: str, user: Dict = Depends(get_current_user)):
     user_id = user["uid"]
     doc_ref = db.collection("users").document(user_id).collection(folder).document(filename)
@@ -55,7 +55,7 @@ async def delete_file(folder: str, filename: str, user: Dict = Depends(get_curre
     return {"message": f"File '{filename}' deleted successfully."}
 
 
-@app.post("/folders/")
+@router.post("/folders/")
 async def create_folder(folder: FolderCreate, user: Dict = Depends(get_current_user)):
     user_id = user["uid"]
     
@@ -74,7 +74,7 @@ async def create_folder(folder: FolderCreate, user: Dict = Depends(get_current_u
     return {"message": f"Folder '{folder.folder_name}' created successfully."}
 
 
-@app.get("/folders/")
+@router.get("/folders/")
 async def list_folders(user: Dict = Depends(get_current_user)):
     user_id = user["uid"]
     folders = [col.id for col in db.collection("users").document(user_id).collections()]
@@ -85,7 +85,7 @@ async def list_folders(user: Dict = Depends(get_current_user)):
     return {"folders": folders}
 
 
-@app.delete("/folders/{folder}")
+@router.delete("/folders/{folder}")
 async def delete_folder(folder: str, user: Dict = Depends(get_current_user)):
     user_id = user["uid"]
     folder_ref = db.collection("users").document(user_id).collection(folder)

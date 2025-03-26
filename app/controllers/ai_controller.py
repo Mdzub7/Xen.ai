@@ -1,17 +1,24 @@
-
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
-from ..services.ai_service import gemini_generate_review, deepseek_generate_review, qwen_generate_review, qwq_generate_review
-from ..models.code_model import CodeRequest
+from services.ai_service import gemini_generate_review, deepseek_generate_review, qwen_generate_review, qwq_generate_review
+from models.code_model import CodeRequest
 import asyncio
 
 async def get_available_services():
     """Get list of available AI services."""
     return {
-        "gemini": "active",
-        "deepseek": "active",
-        "qwen-2.5": "active",
-        "qwq-32b": "active"
+        "services": [
+            {"name": "gemini", "description": "Google's Gemini AI model"},
+            {"name": "deepseek", "description": "DeepSeek AI model"},
+            {"name": "qwen", "description": "Qwen AI model"},
+            {"name": "qwq", "description": "QwQ AI model"}
+        ],
+        "status": {
+            "gemini": "active",
+            "deepseek": "active",
+            "qwen-2.5": "active",
+            "qwq-32b": "active"
+        }
     }
 
 # Define streaming versions of the review functions

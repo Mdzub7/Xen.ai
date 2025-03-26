@@ -1,15 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Header, Request,Security
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, Header, Security
+from services.firebase_auth import verify_firebase_token
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from firebase_admin import  auth
-from ..services.firebase_auth import verify_role
-from ..models.role_model import RoleUpdate
-from ..firebase_client import db
+from firebase_admin import credentials, auth
 
-
-auth_router = APIRouter()
+router = APIRouter()
 security = HTTPBearer()
-DEV_CODE = "DEV1234"
+
 
 def get_current_user(cred: HTTPAuthorizationCredentials = Security(security)):
     """
@@ -28,49 +24,9 @@ def get_current_user(cred: HTTPAuthorizationCredentials = Security(security)):
     except Exception as e:
         raise HTTPException(status_code=401, detail="Authentication failed.")
 
-@auth_router.get("/protected")
-async def protected_route(user=Depends(get_current_user),role:str=Depends(verify_role)):
+@router.get("/protected")
+async def protected_route(user=Depends(get_current_user)):
     """
     A protected route that requires authentication.
     """
-    if role == "pro":
-        return {"message": "Welcome, Pro !","user":user}
-    elif role == "dev":
-        return {"message": "Hello, Dev user!","user":user}
-    return {"message": "Welcome, Normal user!","user":user}
-
-
-
-@auth_router.post("/update-role")
-async def update_role(data: RoleUpdate, user=Depends(get_current_user)):
-    try:
-        if data.role not in ["dev", "pro", "normal"]:
-            raise HTTPException(status_code=400,detail="invalid role")
-       
-        if data.role == "dev":
-            if data.code != DEV_CODE:
-                raise HTTPException(status_code=400, detail="Invalid dev code")
-        uid=user.get("uid")
-        user_ref = db.collection("users").document(uid)
-        user_ref.update({"role": data.role})
-
-        return JSONResponse(content={"message": f"Role updated to '{data.role}'"}, status_code=200)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to update role: {str(e)}")
-    
-@auth_router.get("/get-role")
-async def get_role(user=Depends(get_current_user)):
-    try:
-        uid=user.get("uid")
-        user_ref=db.collection("users").document(uid)
-        user_doc=user_ref.get()
-
-        if not user_doc.exists:
-            raise HTTPException(status_code=404, detail="User not found in Firestore")
-        user_data=user_doc.to_dict()
-        role=user_data.get("role")
-
-        return JSONResponse(content={"messgae": f"Role of current user is {role}"},status_code=200)
-    except Exception as e:
-        raise HTTPException(status_code=500,detail="Failed to get a role!")
+    return {"message": "You are authenticated!", "user": user}

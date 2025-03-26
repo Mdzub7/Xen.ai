@@ -30,5 +30,6 @@ firebase
 firebase-credentials.json
 firebase-credentials.json
 
+firebase.json
+.env.docker
 
-xenai-auth-firebase-adminsdk-fbsvc-6b8fb5a521.json

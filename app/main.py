@@ -1,12 +1,22 @@
 from fastapi import FastAPI
-from .routes import ai,judge0_route,auth_router,files,user_route
 from fastapi.middleware.cors import CORSMiddleware
+from routes.judge0_route import router as judge0_router
+from routes.ai import router as ai_router
+from routes.auth_router import router as auth_router
+from routes.user_route import router as user_router
+from routes.files import router as files_router
+from contextlib import asynccontextmanager
+
+
+
 
 app = FastAPI(
     title="AI Powered Code Reviewer",
     description="An API for AI-powered code review and execution",
     version="1.0.0"
 )
+
+
 
 @app.get("/")
 async def root():
@@ -25,8 +35,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(ai.router, prefix="/ai", tags=["AI Review"])
-app.include_router(judge0_route.router, prefix="/api", tags=["Compiler"])
-app.include_router(auth_router.auth_router, prefix="/auth")
-app.include_router(files.app, prefix="/project",tags=["File System"])
-app.include_router(user_route.router,prefix="",tags=["Profile"])
+app.include_router(ai_router, prefix="/ai", tags=["AI Review"])
+app.include_router(judge0_router, prefix="/api", tags=["Compiler"])
+app.include_router(auth_router, prefix="/auth")
+app.include_router(files_router, prefix="/project",tags=["File System"])
+app.include_router(user_router,prefix="",tags=["Profile"])

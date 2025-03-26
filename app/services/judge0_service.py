@@ -1,6 +1,7 @@
 import requests
 
-JUDGE0_URL = "http://localhost:2358"
+JUDGE0_URL = "http://judge0:2358"
+
 
 def submit_code(source_code: str, language_id: int, stdin: str = ""):
     """

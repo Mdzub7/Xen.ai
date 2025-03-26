@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from ..models.code_model import CodeSubmission
-from ..controllers.judge0_controller import process_code_submission
+from models.code_model import CodeSubmission
+from controllers.judge0_controller import process_code_submission
 
 router = APIRouter()
 

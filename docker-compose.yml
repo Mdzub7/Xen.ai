@@ -1,0 +1,109 @@
+version: "3.8"
+
+services:
+
+  # PostgreSQL for Judge0
+  judge0-db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: judge0password
+      POSTGRES_DB: judge0
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - xenai-network
+
+  # Redis for Judge0 (Job Queue)
+  judge0-redis:
+    image: redis:6
+    restart: always
+    ports:
+      - "6379:6379"  # Redis port
+    networks:
+      - xenai-network
+
+  # RabbitMQ for Judge0
+  judge0-rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "15672:15672"  # RabbitMQ Management UI
+      - "5672:5672"  # RabbitMQ Service
+    networks:
+      - xenai-network
+
+  # Judge0 API (Main Service)
+  judge0:
+    image: judge0/judge0:latest
+    restart: always
+    depends_on:
+      - judge0-db
+      - judge0-redis
+      - judge0-rabbitmq
+    environment:
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: judge0password
+      POSTGRES_DB: judge0
+      POSTGRES_HOST: judge0-db
+      POSTGRES_PORT: 5432
+      RABBITMQ_HOST: judge0-rabbitmq
+      RABBITMQ_PORT: 5672
+      REDIS_URL: redis://judge0-redis:6379  # Use Redis for job queue
+      REDIS_HOST: judge0-redis
+      REDIS_PORT: 6379
+      DISABLE_DATABASE_ENVIRONMENT_CHECK: "1"
+      RAILS_MAX_THREADS: "8"
+      RAILS_SERVER_PROCESSES: "2"
+    ports:
+      - "2358:2358"  # Judge0 API port
+    networks:
+      - xenai-network
+    privileged: true  # Required for cgroups
+    cap_add:
+      - SYS_ADMIN  # Required for cgroups
+    security_opt:
+      - seccomp:unconfined  # Required for cgroups
+
+  # FastAPI Backend
+  backend:
+    build: ./app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    env_file:
+      - .env.docker
+    depends_on:
+      judge0:
+        condition: service_started
+    networks:
+      - xenai-network
+
+  # React Frontend with NGINX
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      backend:
+        condition: service_started
+    restart: always
+    networks:
+      - xenai-network
+
+volumes:
+  pg_data:
+
+networks:
+  xenai-network:
+    driver: bridge
