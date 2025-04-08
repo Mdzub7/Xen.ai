@@ -1,4 +1,4 @@
-from services.judge0_service import submit_code
+from app.services.judge0_service import submit_code
 
 def process_code_submission(source_code: str, language_id: int, stdin: str):
     """
