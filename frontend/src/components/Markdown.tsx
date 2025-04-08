@@ -14,21 +14,21 @@ const MarkdownWithCodeButtons: React.FC<MarkdownWithCodeButtonsProps> = ({ conte
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { applyAICode } = useEditorStore();
   
-  // Preprocess content to improve spacing and replace <br> tags with actual line breaks
+  // Modify the content preprocessing to avoid extra line breaks
   const processedContent = content
     // Replace <br> tags with newlines
     .replace(/<br>/g, '\n')
-    // Add extra line break after headings
+    // Add extra line break after headings (but not double)
     .replace(/^(#{1,6}.*?)$/gm, '$1\n')
-    // Add extra line break after paragraphs
-    .replace(/^([^#\n`].+)$/gm, '$1\n')
-    // Add extra line break after code blocks
-    .replace(/```\w*\n[\s\S]*?```/g, match => `${match}\n`)
-    // Add extra line break after lists
-    .replace(/^(\s*[-*+]\s+.+)$/gm, '$1\n')
-    // Add extra line break after numbered lists
-    .replace(/^(\s*\d+\.\s+.+)$/gm, '$1\n')
-    // Ensure proper spacing around section headers with emojis
+    // Don't add extra line breaks after paragraphs
+    // .replace(/^([^#\n`].+)$/gm, '$1\n')
+    // Don't add extra line breaks after code blocks
+    // .replace(/```\w*\n[\s\S]*?```/g, match => `${match}\n`)
+    // Don't add extra line breaks after lists
+    // .replace(/^(\s*[-*+]\s+.+)$/gm, '$1\n')
+    // Don't add extra line breaks after numbered lists
+    // .replace(/^(\s*\d+\.\s+.+)$/gm, '$1\n')
+    // Ensure proper spacing around section headers with emojis (but not double)
     .replace(/(❌|✅|🔍|💡)(.+?)$/gm, '$1$2\n');
   
   const handleCopy = (code: string) => {
