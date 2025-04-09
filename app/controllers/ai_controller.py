@@ -1,8 +1,11 @@
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
-from services.ai_service import gemini_generate_review, deepseek_generate_review, qwen_generate_review, qwq_generate_review
-from models.code_model import CodeRequest
+from app.services.ai_service import gemini_generate_review, deepseek_generate_review, qwen_generate_review, qwq_generate_review
+from app.models.code_model import CodeRequest
 import asyncio
+
+# Remove the duplicate import
+# import asyncio
 
 async def get_available_services():
     """Get list of available AI services."""
