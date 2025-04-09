@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, Security
-from app.services.firebase_auth import verify_firebase_token
+from services.firebase_auth import verify_firebase_token
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from firebase_admin import credentials, auth
 

@@ -1,9 +1,7 @@
 import firebase_admin
-from firebase_admin import auth
-from fastapi import HTTPException, Security, Depends
+from fastapi import HTTPException
 import firebase_admin.auth
-from app.routes.auth_router import get_current_user
-from typing import Dict
+
 
 def profile_details(uid:str):
     try:

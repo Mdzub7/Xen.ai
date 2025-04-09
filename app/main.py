@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes.judge0_route import router as judge0_router
-from app.routes.ai import router as ai_router
-from app.routes.auth_router import router as auth_router
-from app.routes.user_route import router as user_router
-from app.routes.files import router as files_router
+from routes.judge0_route import router as judge0_router
+from routes.ai import router as ai_router
+from routes.auth_router import router as auth_router
+from routes.user_route import router as user_router
+from routes.files import router as files_router
 from contextlib import asynccontextmanager
 
 

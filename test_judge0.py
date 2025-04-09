@@ -4,7 +4,7 @@ import json
 def test_judge0():
     url = "http://localhost:2358/submissions"
     payload = {
-        "source_code": "print('Hello, CSK Konga!')",
+        "source_code": "print('Hello!')",
         "language_id": 71,  # Python 3.8.1
         "stdin": ""
     }

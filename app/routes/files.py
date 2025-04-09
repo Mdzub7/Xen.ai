@@ -1,12 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict
 from firebase_admin import firestore
-# Fix the firebase_client import - you need to create this module
-from app.firebase_client import db
-# Fix the auth_router import
-from app.routes.auth_router import get_current_user
-# Fix the file_model import
-from app.models.file_model import FileContent, FolderCreate
+from firebase_client import db
+from routes.auth_router import get_current_user
+from models.file_model import FileContent, FolderCreate
 
 router = APIRouter()
 

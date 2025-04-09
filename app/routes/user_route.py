@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.controllers.user_profile_controller import profile
+from controllers.user_profile_controller import profile
 
 router = APIRouter()
 
