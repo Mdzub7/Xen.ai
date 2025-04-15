@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict
 from firebase_admin import firestore
-from firebase_client import db
-from routes.auth_router import get_current_user
-from models.file_model import FileContent, FolderCreate
+from app.firebase_client import db
+from app.routes.auth_router import get_current_user
+from app.models.file_model import FileContent, FolderCreate
 
 router = APIRouter()
 

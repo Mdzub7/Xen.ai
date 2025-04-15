@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start-collab-server": "node node_modules/y-websocket/bin/server.js --port 1234"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -17,6 +18,7 @@
     "diff": "^7.0.0",
     "firebase": "^11.4.0",
     "framer-motion": "^12.4.7",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -25,8 +27,11 @@
     "react-syntax-highlighter": "^15.6.1",
     "react-toastify": "^11.0.5",
     "react-type-animation": "^3.2.0",
+    "react-use-websocket": "^4.13.0",
     "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
+    "uuid": "^11.1.0",
+    "y-websocket": "^3.0.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
