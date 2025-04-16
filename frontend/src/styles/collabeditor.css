@@ -1,23 +1,27 @@
-/* Add these styles to your CSS file (e.g., App.css) */
-
 .typing-marker {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: rgba(255, 255, 0, 0.3); /* Yellow background */
-    border-radius: 2px;
-    padding: 3px;
-    z-index: 1000;
-    pointer-events: none;
-  }
-  
-  .typing-glyph {
-    width: 8px;
-    height: 8px;
-    background-color: #ff0; /* Small yellow dot */
-    border-radius: 50%;
-    position: absolute;
-    left: 0;
-    top: 0;
-  }
-  
+  position: absolute;
+  pointer-events: none; /* Ensure it doesn't interfere with editor clicks */
+  z-index: 100; /* Ensure it's above the text */
+}
+
+.typing-cursor {
+  width: 2px;
+  background-color: blue; /* The color will be dynamically set */
+  animation: blink 1s infinite step-end;
+}
+
+.typing-username-label {
+  position: absolute;
+  top: -1.2em; /* Adjust as needed based on font size */
+  right: 0;
+  font-size: 0.7em;
+  color: blue; /* The color will be dynamically set */
+  background-color: rgba(30, 30, 30, 0.7);
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FileExplorer } from './FileExplorer';
 import Editor from './Editor';
 import { Terminal } from './Terminal';
@@ -46,7 +46,7 @@ const Layout: React.FC = () => {
         {/* Main Content Area */}
         <div className={`flex flex-col flex-1 min-w-0 transition-all duration-300 ${isAIPanelOpen ? 'mr-[30vw]' : ''}`}>
           <div className="flex-grow overflow-hidden">
-            {roomId ? <CollabEditor /> : <Editor />}
+            {roomId ? <CollabEditor isHost={!!roomId} /> : <Editor />}
           </div>
           <div className="h-[30vh] border-t border-white/10 overflow-hidden">
             <Terminal />
@@ -65,3 +65,5 @@ const Layout: React.FC = () => {
 };
 
 export default Layout;
+
+

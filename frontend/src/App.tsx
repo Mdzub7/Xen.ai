@@ -8,6 +8,8 @@ import Layout from './components/Layout';
 import {NotFoundPage} from './components/NotFoundPage';
 import { ThemeProvider } from './components/ThemeProvider';
 import { useEditorStore } from './store/editorStore'; 
+import CreateRoom from './components/CreateRoom';
+import JoinRoom from './components/JoinRoom';
 
 const App: React.FC = () => {
   const { isAuthenticated, initializeDefaultFile } = useEditorStore();
@@ -27,7 +29,9 @@ const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* Route for collaborative rooms */}
-          <Route path="/v1/room/:roomId" element={<Layout />} />
+          <Route path="/create-room" element={<CreateRoom />} />
+          <Route path="/join-room" element={<JoinRoom />} />
+          <Route path="/collab/:roomId" element={<Layout />} />
           {/* Default editor for other /v1 routes */}
           <Route path="/v1/*" element={<Layout />} />
           <Route path="*" element={<NotFoundPage />} />
