@@ -1,19 +1,24 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { useEditorStore } from '../store/editorStore';
 import { ActivityBar } from './ActivityBar';
-import { SidePanel } from './SidePanel';
-import Editor from './Editor';
 import CollabEditor from './CollabEditor';
-import { Terminal } from './Terminal';
-import { AIPanel } from './AIPanel';
 import { Toolbar } from './Toolbar';
 import { StatusBar } from './StatusBar';
+import { CollaborativeSidePanel } from './CollaborativeSidePanel';
+import { Terminal } from './Terminal';
+import { AIPanel } from './AIPanel';
+import { v4 as uuidv4 } from 'uuid';
+import useWebSocket from 'react-use-websocket'; // Assuming you use this here
 
-const Layout: React.FC = () => {
-    const { isAIPanelOpen, toggleAIPanel, currentView, activeFile } = useEditorStore();
+const CollabLayout: React.FC = () => {
+    const { isAIPanelOpen, toggleAIPanel, currentView } = useEditorStore();
     const { roomId } = useParams<{ roomId: string }>();
-    const navigate = useNavigate();
+    const [isHost] = useState<boolean>(!!roomId);
+    const [userId] = useState<string>(() => uuidv4()); // Generate userId here
+    const baseWsUrl = import.meta.env.VITE_BACKEND_WS_URL || 'ws://localhost:8000';
+    const socketUrl = roomId ? `${baseWsUrl}/ws/collab/${roomId}/${userId}` : null;
+    const { sendMessage } = useWebSocket(socketUrl, {}); // Get sendMessage here
 
     console.log('Layout Room ID:', roomId);
 
@@ -36,22 +41,26 @@ const Layout: React.FC = () => {
                     <ActivityBar />
                 </div>
 
-                {/* Side Panel */}
+                {/* Collaborative Side Panel */}
                 {currentView !== 'none' && (
                     <div className="hidden md:block w-60 flex-shrink-0 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-r border-white/10 z-10">
-                        <SidePanel />
+                        <CollaborativeSidePanel
+                            isHost={isHost}
+                            sendMessage={sendMessage}
+                            userId={userId}
+                        />
                     </div>
                 )}
 
                 {/* Main Content Area */}
                 <div className={`flex flex-col flex-1 min-w-0 transition-all duration-300 ${isAIPanelOpen ? 'mr-[30vw]' : ''}`}>
                     <div className="flex-grow overflow-hidden">
-                        {roomId ? <CollabEditor /> : <Editor />}
+                        <CollabEditor /> {/* CollabEditor might need userId as well if it doesn't create its own */}
                     </div>
                     <div className="h-[30vh] border-t border-white/10 overflow-hidden">
                         <Terminal />
                     </div>
-                    <StatusBar activeFile={activeFile} />
+                    <StatusBar />
                 </div>
 
                 {/* AI Panel */}
@@ -65,4 +74,4 @@ const Layout: React.FC = () => {
     );
 };
 
-export default Layout;
+export default CollabLayout;

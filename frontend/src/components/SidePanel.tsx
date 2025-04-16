@@ -22,8 +22,6 @@ export const SidePanel: React.FC = () => {
         return null;
       case 'none':
         return null;
-      default:
-        return <FileExplorer />;
     }
   };
 

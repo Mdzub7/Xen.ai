@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEditorStore } from '../store/editorStore';
 import { defineMonacoThemes } from './MonacoThemes';
+import CollabFileExplorer from './CollabFileExplorer';
 import '../styles/collabeditor.css';
 
 interface WebSocketMessage {
@@ -271,113 +272,116 @@ const CollabEditor: React.FC = () => {
                 )}
             </div>
 
-            <div className="relative flex-1 overflow-hidden">
-                {currentFile ? (
-                    <MonacoEditor
-                        height="100%"
-                        width="100%"
-                        theme="vs-dark"
-                        language={currentFile.language || 'javascript'}
-                        value={currentFile.content}
-                        onChange={handleEditorChange}
-                        onMount={handleEditorDidMount}
-                        options={{
-                            selectOnLineNumbers: true,
-                            automaticLayout: true,
-                            minimap: { enabled: false },
-                            fontSize: 14,
-                            fontFamily: 'Consolas, monospace',
-                            wordWrap: 'on',
-                            lineNumbers: 'on',
-                            glyphMargin: false,
-                            folding: true,
-                            lineDecorationsWidth: 0,
-                            scrollBeyondLastLine: false,
-                            renderLineHighlight: 'line',
-                            cursorBlinking: 'smooth',
-                        }}
-                        beforeMount={(monaco) => defineMonacoThemes(monaco)}
-                    />
-                ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="text-center p-8">
-                            <p className="text-gray-400 mb-4">
-                                {connectionStatus === 'Connected'
-                                    ? 'Waiting for file content...'
-                                    : 'Connecting to room...'}
-                            </p>
-                            {isHost && (
-                                <button
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                                    onClick={() => {
-                                        // Create a default file if you're the host
-                                        const defaultFile = {
-                                            id: uuidv4(),
-                                            name: 'main.js',
-                                            language: 'javascript',
-                                            content: '// Start coding here\n\nconsole.log("Hello, collaborative world!");\n'
-                                        };
-                                        setCurrentFile(defaultFile);
+            <div className="flex flex-row flex-1">
 
-                                        // Broadcast the file creation to all users
-                                        sendMessage(JSON.stringify({
-                                            type: 'host_selects_file',
-                                            userId: userId,
-                                            fileId: defaultFile.id,
-                                            content: defaultFile.content
-                                        }));
-                                    }}
-                                >
-                                    Create Default File
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {typingUsers.map((user) => {
-                    const lineHeight = getLineHeight();
-                    const markerTop = getPositionTop(user.position);
-
-                    return (
-                        <div
-                            key={user.userId}
-                            className="typing-marker"
-                            style={{
-                                top: `${markerTop}px`,
-                                left: 'auto',
-                                right: '5px',
-                                zIndex: 100,
-                                pointerEvents: 'none',
+                <div className="relative flex-1 overflow-hidden">
+                    {currentFile ? (
+                        <MonacoEditor
+                            height="100%"
+                            width="100%"
+                            theme="vs-dark"
+                            language={currentFile.language || 'javascript'}
+                            value={currentFile.content}
+                            onChange={handleEditorChange}
+                            onMount={handleEditorDidMount}
+                            options={{
+                                selectOnLineNumbers: true,
+                                automaticLayout: true,
+                                minimap: { enabled: false },
+                                fontSize: 14,
+                                fontFamily: 'Consolas, monospace',
+                                wordWrap: 'on',
+                                lineNumbers: 'on',
+                                glyphMargin: false,
+                                folding: true,
+                                lineDecorationsWidth: 0,
+                                scrollBeyondLastLine: false,
+                                renderLineHighlight: 'line',
+                                cursorBlinking: 'smooth',
                             }}
-                        >
+                            beforeMount={(monaco) => defineMonacoThemes(monaco)}
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center p-8">
+                                <p className="text-gray-400 mb-4">
+                                    {connectionStatus === 'Connected'
+                                        ? 'Waiting for file content...'
+                                        : 'Connecting to room...'}
+                                </p>
+                                {isHost && (
+                                    <button
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                                        onClick={() => {
+                                            // Create a default file if you're the host
+                                            const defaultFile = {
+                                                id: uuidv4(),
+                                                name: 'main.js',
+                                                language: 'javascript',
+                                                content: '// Start coding here\n\nconsole.log("Hello, collaborative world!");\n'
+                                            };
+                                            setCurrentFile(defaultFile);
+
+                                            // Broadcast the file creation to all users
+                                            sendMessage(JSON.stringify({
+                                                type: 'host_selects_file',
+                                                userId: userId,
+                                                fileId: defaultFile.id,
+                                                content: defaultFile.content
+                                            }));
+                                        }}
+                                    >
+                                        Create Default File
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {typingUsers.map((user) => {
+                        const lineHeight = getLineHeight();
+                        const markerTop = getPositionTop(user.position);
+
+                        return (
                             <div
-                                className="typing-cursor"
+                                key={user.userId}
+                                className="typing-marker"
                                 style={{
-                                    width: '2px',
-                                    height: `${lineHeight}px`,
-                                    backgroundColor: user.color,
-                                    animation: 'blink 1s infinite step-end',
-                                }}
-                            />
-                            <span
-                                className="typing-username-label"
-                                style={{
-                                    position: 'absolute',
-                                    top: `-${lineHeight}px`,
+                                    top: `${markerTop}px`,
+                                    left: 'auto',
                                     right: '5px',
-                                    fontSize: '10px',
-                                    color: user.color,
-                                    backgroundColor: 'rgba(30, 30, 30, 0.7)',
-                                    padding: '2px 4px',
-                                    borderRadius: '3px',
+                                    zIndex: 100,
+                                    pointerEvents: 'none',
                                 }}
                             >
-                                {user.username}
-                            </span>
-                        </div>
-                    );
-                })}
+                                <div
+                                    className="typing-cursor"
+                                    style={{
+                                        width: '2px',
+                                        height: `${lineHeight}px`,
+                                        backgroundColor: user.color,
+                                        animation: 'blink 1s infinite step-end',
+                                    }}
+                                />
+                                <span
+                                    className="typing-username-label"
+                                    style={{
+                                        position: 'absolute',
+                                        top: `-${lineHeight}px`,
+                                        right: '5px',
+                                        fontSize: '10px',
+                                        color: user.color,
+                                        backgroundColor: 'rgba(30, 30, 30, 0.7)',
+                                        padding: '2px 4px',
+                                        borderRadius: '3px',
+                                    }}
+                                >
+                                    {user.username}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
 
             <style jsx>{`
