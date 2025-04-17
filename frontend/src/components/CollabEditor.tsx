@@ -19,7 +19,28 @@ interface WebSocketMessage {
     message?: string; // For error messages
     roomId?: string; // For room_joined confirmations
     fileId?: string; // For file operations
+    language?: string;
 }
+
+function inferLanguageFromName(name: string): string {
+    const ext = name.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'js':   return 'javascript';
+      case 'jsx':  return 'javascript';
+      case 'ts':   return 'typescript';
+      case 'tsx':  return 'typescript';
+      case 'py':   return 'python';
+      case 'java': return 'java';
+      case 'cpp':  return 'cpp';
+      case 'c':    return 'c';
+      case 'cs':   return 'csharp';
+      case 'html': return 'html';
+      case 'css':  return 'css';
+      case 'json': return 'json';
+      default:     return 'plaintext';
+    }
+  }
+  
 
 const CollabEditor: React.FC = () => {
     const { roomId } = useParams<{ roomId: string }>();
@@ -100,33 +121,34 @@ const CollabEditor: React.FC = () => {
             return;
         }
     }, [roomId, navigate]);
-
     useEffect(() => {
         if (lastMessage?.data) {
             try {
                 const messageData: WebSocketMessage = JSON.parse(lastMessage.data);
                 console.log('Received WebSocket message:', messageData); // Debug log
-
+    
                 // Handle error messages
                 if (messageData.type === 'error') {
                     setConnectionError(messageData.message || 'Unknown error');
                     console.error('WebSocket error message:', messageData.message);
                     return;
                 }
-
+    
                 if (messageData.type === 'room_joined' && messageData.role) {
                     console.log('Room joined as:', messageData.role); // Debug log
                     setIsHost(messageData.role === 'host');
                     setConnectionError(null);
                 } else if (messageData.type === 'initial_content' && messageData.content !== undefined) {
                     console.log('Received initial content:', messageData.content);
+                    // Ensure we set the correct language received from the host
+                    const language = messageData.language || 'plaintext';  // Default to 'plaintext' if not specified
                     if (currentFile) {
-                        updateFile({ ...currentFile, content: messageData.content });
+                        updateFile({ ...currentFile, content: messageData.content, language });
                     } else {
                         setCurrentFile({
                             id: uuidv4(),
                             name: 'initial_file',
-                            language: 'javascript',
+                            language: language,
                             content: messageData.content,
                         });
                     }
@@ -138,58 +160,34 @@ const CollabEditor: React.FC = () => {
                         if (model) {
                             const selections = editor.getSelections();
                             const scrollTop = editor.getScrollTop();
-
+    
                             localChangeRef.current = true;
-
+    
                             model.pushEditOperations(
                                 selections,
                                 [{ range: model.getFullModelRange(), text: messageData.content }],
                                 () => selections
                             );
-
+    
                             if (currentFile) {
                                 updateFile({ ...currentFile, content: messageData.content });
                             }
-
+    
                             editor.setScrollTop(scrollTop);
                             setTimeout(() => {
                                 localChangeRef.current = false;
                             }, 100);
                         }
                     }
-                } else if (messageData.type === 'user_typing' && messageData.userId !== userId && messageData.position) {
-                    console.log('User typing detected:', messageData.userId); // Debug log
-                    const userColor = getUserColor(messageData.userId!);
-                    setTypingUsers(prev => {
-                        const existingUserIndex = prev.findIndex(user => user.userId === messageData.userId);
-                        if (existingUserIndex > -1) {
-                            const updatedUsers = [...prev];
-                            updatedUsers[existingUserIndex] = {
-                                ...updatedUsers[existingUserIndex],
-                                position: messageData.position!
-                            };
-                            return updatedUsers;
-                        } else {
-                            return [...prev, {
-                                userId: messageData.userId!,
-                                username: messageData.username || `User-${messageData.userId!.substring(0, 4)}`,
-                                position: messageData.position!,
-                                color: userColor!
-                            }];
-                        }
-                    });
-
-                    // Auto-remove typing indicator after a timeout
-                    setTimeout(() => {
-                        setTypingUsers(prev => prev.filter(user => user.userId !== messageData.userId));
-                    }, 3000);
                 } else if (messageData.type === 'host_selects_file' && messageData.userId !== userId &&
                     messageData.content !== undefined && messageData.fileId) {
                     console.log('Host selected a file:', messageData.fileId); // Debug log
+                    // Ensure the file's language is set correctly
+                    const language = messageData.language || 'plaintext';  // Default to 'plaintext' if not specified
                     setCurrentFile({
                         id: messageData.fileId,
                         name: 'remote_file',
-                        language: 'javascript',
+                        language: language,
                         content: messageData.content
                     });
                 } else if (messageData.type === 'file_created' || messageData.type === 'file_deleted') {
@@ -202,7 +200,7 @@ const CollabEditor: React.FC = () => {
             }
         }
     }, [lastMessage, userId, currentFile, updateFile, getUserColor, setCurrentFile, sendMessage]);
-
+    
     const handleEditorChange = useCallback((value: string | undefined) => {
         if (!value || localChangeRef.current || !editorRef.current) return;
 
@@ -280,7 +278,7 @@ const CollabEditor: React.FC = () => {
                             height="100%"
                             width="100%"
                             theme="vs-dark"
-                            language={currentFile.language || 'javascript'}
+                            language={currentFile.language}
                             value={currentFile.content}
                             onChange={handleEditorChange}
                             onMount={handleEditorDidMount}
@@ -317,7 +315,7 @@ const CollabEditor: React.FC = () => {
                                             const defaultFile = {
                                                 id: uuidv4(),
                                                 name: 'main.js',
-                                                language: 'javascript',
+                                                language: 'test',
                                                 content: '// Start coding here\n\nconsole.log("Hello, collaborative world!");\n'
                                             };
                                             setCurrentFile(defaultFile);
@@ -327,7 +325,8 @@ const CollabEditor: React.FC = () => {
                                                 type: 'host_selects_file',
                                                 userId: userId,
                                                 fileId: defaultFile.id,
-                                                content: defaultFile.content
+                                                content: defaultFile.content,
+                                                language: defaultFile.language
                                             }));
                                         }}
                                     >
