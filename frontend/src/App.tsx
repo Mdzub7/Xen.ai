@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import { SignUp } from './components/auth/SignUp';
+import  {SignUp}  from './components/auth/SignUp';
 import { useEditorStore } from './store/editorStore';
-import { Login } from './components/auth/Login';
-import { Home } from './components/Home';
+import  {Login}  from './components/auth/Login';
+import  Home  from './components/Home';
 import { NotFoundPage } from './components/NotFoundPage';
 import ForgotPassword from './components/ForgotPassowrd';
 import  Layout  from './components/Layout';
