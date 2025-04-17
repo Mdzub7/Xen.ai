@@ -126,7 +126,7 @@ export const CollabFileExplorer: React.FC = () => {
       ydocRef.current = new Y.Doc();
       
       // Room name for collaboration
-      const roomName = 'file-explorer-shared-room'; // or use project ID
+      const roomName = 'file-explorer-' + Math.random().toString(36).substring(2, 10);
       console.log(`Using room name: ${roomName}`);
       
       // Connect to local FastAPI signaling server
@@ -204,137 +204,112 @@ export const CollabFileExplorer: React.FC = () => {
           return false;
         }
       };
-      //decodeFS
-      const decodeYFileSystem = (structure: Y.Map<any>): FileSystemType => {
-        const yFolders = structure.get('folders') as Y.Array<any>;
-        const yFiles = structure.get('files') as Y.Array<any>;
-      
-        const folders = yFolders.toArray().map((yFolder: any) => ({
-          id: yFolder.get('id'),
-          name: yFolder.get('name'),
-          isExpanded: yFolder.get('isExpanded'),
-          children: (yFolder.get('children') as Y.Array<any>).toArray().map((child: any) => {
-            const childObj: any = {};
-            child.forEach((val: any, key: string) => {
-              childObj[key] = val;
-            });
-            return childObj;
-          })
-        }));
-      
-        const files = yFiles.toArray().map((yFile: any) => {
-          const fileObj: any = {};
-          yFile.forEach((val: any, key: string) => {
-            fileObj[key] = val;
-          });
-          return fileObj;
-        });
-      
-        return { folders, files };
-      };
-
-      //EncodeFS
-      const encodeFileSystem = (fileSystem: FileSystemType): Y.Map<any> => {
-        const yStructure = new Y.Map();
-      
-        const yFolders = new Y.Array();
-        fileSystem.folders.forEach(folder => {
-          const yFolder = new Y.Map();
-          yFolder.set('id', folder.id);
-          yFolder.set('name', folder.name);
-          yFolder.set('isExpanded', folder.isExpanded);
-      
-          const yChildren = new Y.Array();
-          folder.children.forEach(child => {
-            const yChild = new Y.Map();
-            for (const [key, value] of Object.entries(child)) {
-              yChild.set(key, value);
-            }
-            yChildren.push([yChild]);
-          });
-      
-          yFolder.set('children', yChildren);
-          yFolders.push([yFolder]);
-        });
-      
-        const yFiles = new Y.Array();
-        fileSystem.files.forEach(file => {
-          const yFile = new Y.Map();
-          for (const [key, value] of Object.entries(file)) {
-            yFile.set(key, value);
-          }
-          yFiles.push([yFile]);
-        });
-      
-        yStructure.set('folders', yFolders);
-        yStructure.set('files', yFiles);
-      
-        return yStructure;
-      };
-
       
       const initializeFileSystem = async () => {
+        // Set up file system whether connected or not
         console.log("Setting up file system");
-      
         try {
           const yFileSystem = ydocRef.current!.getMap('fileSystem');
-      
-          let yStructure = yFileSystem.get('structure');
-      
-          if (!yStructure) {
-            console.log("Creating new file system structure");
-            yStructure = new Y.Map();
-            yFileSystem.set('structure', yStructure); // Set only ONCE
-          }
-      
-          // OBSERVE STRUCTURE
+          
+          // Add observer first to catch initial state
           yFileSystem.observe(event => {
             console.log("File system changed:", event);
-      
-            const structure = yFileSystem.get('structure');
-            if (structure) {
-              const parsed = structure.toJSON ? structure.toJSON() : structure;
-              setFileSystem(parsed);
+            try {
+              const structure = yFileSystem.get('structure');
+              if (structure) {
+                const parsed = structure.toJSON ? structure.toJSON() : structure;
+                console.log("Updated file system:", parsed);
+                if (parsed) {
+                  setFileSystem(parsed);
+                }
+              }
+            } catch (e) {
+              console.error("Error observing file system changes:", e);
             }
           });
-      
-          // Initialize only if structure is empty
-          if (!yStructure.get('folders') && !yStructure.get('files')) {
+          
+          // Initialize the file system if it doesn't exist
+          if (!yFileSystem.has('structure')) {
+            console.log("Creating new file system structure");
+            const initialFileSystem: FileSystemType = {
+              folders: [
+                {
+                  id: 'root',
+                  name: 'Project Root',
+                  children: [],
+                  isExpanded: true
+                }
+              ],
+              files: [
+                {
+                  id: 'welcome',
+                  name: 'welcome.js',
+                  content: '// Welcome to the collaborative editor!\n// Start typing to collaborate.',
+                  language: 'javascript',
+                  createdAt: new Date(),
+                  updatedAt: new Date()
+                }
+              ]
+            };
+            
+            // Store the initial structure - using Y.Map for better sync
+            const yStructure = new Y.Map();
+            
+            // Add folders as a Y.Array
             const yFolders = new Y.Array();
+            initialFileSystem.folders.forEach(folder => {
+              const yFolder = new Y.Map();
+              yFolder.set('id', folder.id);
+              yFolder.set('name', folder.name);
+              yFolder.set('isExpanded', folder.isExpanded);
+              
+              // Create Y.Array for children
+              const yChildren = new Y.Array();
+              folder.children.forEach(child => {
+                const yChild = new Y.Map();
+                for (const [key, value] of Object.entries(child)) {
+                  yChild.set(key, value);
+                }
+                yChildren.push([yChild]);
+              });
+              
+              yFolder.set('children', yChildren);
+              yFolders.push([yFolder]);
+            });
+            
+            // Add files as a Y.Array
             const yFiles = new Y.Array();
-      
-            const rootFolder = new Y.Map();
-            rootFolder.set('id', 'root');
-            rootFolder.set('name', 'Project Root');
-            rootFolder.set('isExpanded', true);
-            rootFolder.set('children', new Y.Array());
-      
-            yFolders.push([rootFolder]);
-      
-            const welcomeFile = new Y.Map();
-            welcomeFile.set('id', 'welcome');
-            welcomeFile.set('name', 'welcome.js');
-            welcomeFile.set('content', '// Welcome!');
-            welcomeFile.set('language', 'javascript');
-            welcomeFile.set('createdAt', new Date().toISOString());
-            welcomeFile.set('updatedAt', new Date().toISOString());
-      
-            yFiles.push([welcomeFile]);
-      
+            initialFileSystem.files.forEach(file => {
+              const yFile = new Y.Map();
+              for (const [key, value] of Object.entries(file)) {
+                yFile.set(key, value);
+              }
+              yFiles.push([yFile]);
+            });
+            
             yStructure.set('folders', yFolders);
             yStructure.set('files', yFiles);
+            
+            yFileSystem.set('structure', yStructure);
+            setFileSystem(initialFileSystem);
+          } else {
+            // Load existing structure
+            console.log("Loading existing file system structure");
+            try {
+              const structure = yFileSystem.get('structure');
+              const parsed = structure.toJSON ? structure.toJSON() : structure;
+              console.log("Existing file system:", parsed);
+              if (parsed) {
+                setFileSystem(parsed);
+              }
+            } catch (e) {
+              console.error("Error parsing file system:", e);
+            }
           }
-      
-          // Set initial state
-          const parsed = yStructure.toJSON ? yStructure.toJSON() : yStructure;
-          setFileSystem(parsed);
-      
         } catch (e) {
           console.error("Error in initializeFileSystem:", e);
         }
       };
-      
-      
       
       // Start the connection process
       const setupConnection = async () => {
@@ -371,60 +346,34 @@ export const CollabFileExplorer: React.FC = () => {
   const updateFileSystem = (newFileSystem: FileSystemType) => {
     try {
       console.log("Updating file system:", newFileSystem);
-      setFileSystem(newFileSystem); // Update UI immediately
-  
-      const yFileSystem = ydocRef.current?.getMap('fileSystem');
-      if (!yFileSystem) {
-        console.warn("Y.js doc not available");
-        return;
+      
+      // First, update the local state to ensure UI updates
+      setFileSystem(newFileSystem);
+      
+      // Then try to update Y.js shared state if available
+      if (ydocRef.current) {
+        try {
+          const yFileSystem = ydocRef.current.getMap('fileSystem');
+          
+          // Simplified approach - convert to a plain object and store 
+          // This avoids complex Y.js structures that might be causing issues
+          const plainFileSystem = JSON.parse(JSON.stringify(newFileSystem));
+          yFileSystem.set('structure', plainFileSystem);
+          
+          console.log("Successfully updated Y.js shared state");
+        } catch (err) {
+          console.error("Error updating Y.js state:", err);
+          // Already updated local state, so UI will still work
+        }
+      } else {
+        console.warn("Y.js document not available, local state updated only");
       }
-  
-      const yStructure = yFileSystem.get('structure') as Y.Map<any>;
-      if (!yStructure) {
-        console.warn("Y.js structure not found");
-        return;
-      }
-  
-      // Update folders
-      const yFolders = new Y.Array();
-      newFileSystem.folders.forEach(folder => {
-        const yFolder = new Y.Map();
-        yFolder.set('id', folder.id);
-        yFolder.set('name', folder.name);
-        yFolder.set('isExpanded', folder.isExpanded);
-  
-        const yChildren = new Y.Array();
-        folder.children.forEach(child => {
-          const yChild = new Y.Map();
-          Object.entries(child).forEach(([key, value]) => {
-            yChild.set(key, value);
-          });
-          yChildren.push([yChild]);
-        });
-  
-        yFolder.set('children', yChildren);
-        yFolders.push([yFolder]);
-      });
-  
-      const yFiles = new Y.Array();
-      newFileSystem.files.forEach(file => {
-        const yFile = new Y.Map();
-        Object.entries(file).forEach(([key, value]) => {
-          yFile.set(key, value);
-        });
-        yFiles.push([yFile]);
-      });
-  
-      // Perform atomic update
-      yStructure.set('folders', yFolders);
-      yStructure.set('files', yFiles);
-  
-      console.log("Y.js shared state updated");
     } catch (error) {
       console.error("Error in updateFileSystem:", error);
+      // As a last resort, try just updating the state directly
+      setFileSystem(newFileSystem);
     }
   };
-  
 
   // FIXED: Simplified and more robust handleCreateItem function
   const handleCreateItem = () => {
