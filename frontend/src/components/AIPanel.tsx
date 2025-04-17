@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Send, Hash, FileText, Sparkles } from "lucide-react";
+import { X, Send, Hash, FileText, Sparkles, Bot } from "lucide-react";
 import { useEditorStore } from "../store/editorStore";
 import { Message, File } from "../types";
 import MarkdownWithCodeButtons from "./Markdown"; // Import the new component
@@ -11,6 +11,7 @@ import "highlight.js/styles/github-dark.css";
 import "../styles/codeBlock.css";
 import "../styles/loadingSpinner.css";
 import { Link } from "react-router-dom";
+import { Builder } from "./Builder";
 
 interface Section {
   type: "code" | "text";
@@ -51,6 +52,9 @@ export const AIPanel: React.FC = () => {
     files,
     currentFile,
   } = useEditorStore();
+  
+  // Add state for active tab
+  const [activeTab, setActiveTab] = useState<'chat' | 'builder'>('chat');
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -252,17 +256,30 @@ export const AIPanel: React.FC = () => {
 
   return (
     <div className="fixed right-0 top-0 h-[97.3vh] w-[30vw] flex flex-col bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-l border-white/10 shadow-lg z-50">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-black/20 to-black">
-        <div className="flex items-center gap-2">
-          <span className="text-white font-medium">Xen.ai</span>
-          <span className="text-blue-300 rounded-full bg-grey px-2 py-1 text-xs font-medium shadow-sm">
-            Beta
-          </span>
+      {/* Header with Tabs */}
+      <div className="flex justify-between border-b border-white/10 bg-gradient-to-r from-black/20 to-black">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex items-center gap-2 px-4 py-3 ${activeTab === 'chat' ? 'border-b-2 border-blue-400 text-blue-400' : 'text-white/70 hover:text-white/90'}`}
+          >
+            <Bot size={16} />
+            <span>Xen.ai</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('builder')}
+            className={`flex items-center gap-2 px-4 py-3 ${activeTab === 'builder' ? 'border-b-2 border-blue-400 text-blue-400' : 'text-white/70 hover:text-white/90'}`}
+          >
+            <Sparkles size={16} />
+            <span>Builder</span>
+            <span className="text-blue-300 rounded-full bg-grey px-2 py-0.5 text-xs font-medium shadow-sm ml-1">
+              Beta
+            </span>
+          </button>
         </div>
         <button
           onClick={toggleAIPanel}
-          className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590]"
+          className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#7d8590] self-center mr-2"
           title="Close AI Panel"
         >
           <X size={16} />
@@ -271,94 +288,103 @@ export const AIPanel: React.FC = () => {
 
       {/* Main content area - scrollable */}
       <div className="flex-1 overflow-y-auto">
-        {/* If not authenticated, show blur effect */}
-        {!isAuthenticated && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center 
-         bg-black/30 backdrop-blur-sm text-white text-lg font-semibold 
-         text-center p-6">
-            <p className="text-white/90">Please login to use the AI assistant.</p>
-            <Link
-              to="/login"
-              className="mt-4 px-6 py-2 border border-white/50 text-white/80 rounded-lg 
-                   hover:bg-white hover:text-black transition-all duration-300 ease-in-out"
-            >
-              Login!
-            </Link>
-          </div>
-        )}
-
-        {/* Empty State with Did You Know panel - Centered */}
-        {isAuthenticated && messages.length === 0 && !isLoading && !isReviewLoading && (
-          <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-            <h1 className="text-2xl font-semibold text-[#e6edf3] mb-2">
-              Xen AI
-            </h1>
-            <p className="text-[#7d8590] text-sm max-w-md mb-8">
-              Feel free to ask questions or seek advice about your codebase or coding in general.
-            </p>
-            
-            {/* Did You Know panel */}
-            <div className="w-full max-w-md bg-[#161b22]/70 rounded-lg p-4 border border-[#30363d] mt-4">
-              <div className="flex items-center mb-2">
-                <div className="mr-2 text-yellow-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-medium text-[#e6edf3]">Did you know?</h3>
-                <button className="ml-auto text-[#7d8590] hover:text-[#e6edf3]">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                  </svg>
-                </button>
+        {activeTab === 'chat' ? (
+          <>
+            {/* If not authenticated, show blur effect */}
+            {!isAuthenticated && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center 
+                bg-black/30 backdrop-blur-sm text-white text-lg font-semibold 
+                text-center p-6">
+                <p className="text-white/90">Please login to use the AI assistant.</p>
+                <Link
+                  to="/login"
+                  className="mt-4 px-6 py-2 border border-white/50 text-white/80 rounded-lg 
+                    hover:bg-white hover:text-black transition-all duration-300 ease-in-out"
+                >
+                  Login!
+                </Link>
               </div>
-              <p className="text-sm text-[#e6edf3]">{TIPS[currentTip]}</p>
-            </div>
+            )}
+
+            {/* Empty State with Did You Know panel - Centered */}
+            {isAuthenticated && messages.length === 0 && !isLoading && !isReviewLoading && (
+              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                <h1 className="text-2xl font-semibold text-[#e6edf3] mb-2">
+                  Xen AI
+                </h1>
+                <p className="text-[#7d8590] text-sm max-w-md mb-8">
+                  Feel free to ask questions or seek advice about your codebase or coding in general.
+                </p>
+                
+                {/* Did You Know panel */}
+                <div className="w-full max-w-md bg-[#161b22]/70 rounded-lg p-4 border border-[#30363d] mt-4">
+                  <div className="flex items-center mb-2">
+                    <div className="mr-2 text-yellow-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-medium text-[#e6edf3]">Did you know?</h3>
+                    <button className="ml-auto text-[#7d8590] hover:text-[#e6edf3]">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-sm text-[#e6edf3]">{TIPS[currentTip]}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Loading Spinner */}
+            {isAuthenticated && messages.length === 0 && (isLoading || isReviewLoading) && (
+              <div className="flex-1 flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            )}
+
+            {/* Messages */}
+            {isAuthenticated && (
+              <div className="px-4 py-6">
+                {messages.map((message) => (
+                  <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
+                    <div className={`rounded-lg p-6 shadow-md ${message.role === "user" ? "bg-[#2d333b] text-[#e6edf3] max-w-[85%]" : "bg-[#22272e] text-[#e6edf3] max-w-[90%]"}`}>
+                      {/* Show message content if available, else show spinner */}
+                      {message.content ? (
+                        <MarkdownWithCodeButtons content={message.content} />
+                      ) : (
+                        <div className="flex-1 flex items-center justify-center">
+                          <LoadingSpinner />
+                        </div>
+                      )}
+                      <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Always show spinner when loading */}
+                {(isLoading || isReviewLoading) && (
+                  <div className="flex justify-left items-center my-6">
+                    <LoadingSpinner />
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="h-full overflow-y-auto">
+            {/* Render the Builder component */}
+            <Builder />
           </div>
         )}
-
-        {/* Loading Spinner */}
-        {isAuthenticated && messages.length === 0 && (isLoading || isReviewLoading) && (
-          <div className="flex-1 flex items-center justify-center">
-            <LoadingSpinner />
-          </div>
-        )}
-
-        {/* Messages */}
-        {isAuthenticated && (
-  <div className="px-4 py-6">
-    {messages.map((message) => (
-      <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
-        <div className={`rounded-lg p-6 shadow-md ${message.role === "user" ? "bg-[#2d333b] text-[#e6edf3] max-w-[85%]" : "bg-[#22272e] text-[#e6edf3] max-w-[90%]"}`}>
-          {/* Show message content if available, else show spinner */}
-          {message.content ? (
-            <MarkdownWithCodeButtons content={message.content} />
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <LoadingSpinner />
-            </div>
-          )}
-          <p className="text-xs text-[#7d8590] mt-4 pt-2 border-t border-[#30363d]">
-            {new Date(message.timestamp).toLocaleTimeString()}
-          </p>
-        </div>
       </div>
-    ))}
-
-    {/* Always show spinner when loading */}
-    {(isLoading || isReviewLoading) && (
-      <div className="flex justify-left items-center my-6">
-        <LoadingSpinner />
-      </div>
-    )}
-
-    <div ref={messagesEndRef} />
-  </div>
-)}
-</div>
 
       {/* Input Area - Redesigned with isolated bottom toolbar */}
-      {isAuthenticated && (
+      {isAuthenticated && activeTab === 'chat' && (
         <div className="p-4 border-t border-white/10 bg-black/20">
           <div className="relative">
             <div className="flex flex-col rounded-lg border border-blue-500/50 bg-black/40 overflow-hidden">
@@ -453,7 +479,7 @@ export const AIPanel: React.FC = () => {
                   <div className="relative" ref={modelDropdownRef}>
                     <button 
                       onClick={() => setShowModelDropdown(!showModelDropdown)}
-                      className="text-xs text-[#7d8590] hover:text-[#e6edf3] px-2 py-1 rounded flex items-center"
+                      className="text-xs text-[#7d8590] hover:text-[#e6edf3] p-2 py-1 rounded flex items-center"
                     >
                       {selectedModel === 'gemini' ? 'Gemini' : 
                        selectedModel === 'deepseek' ? 'DeepSeek' : 

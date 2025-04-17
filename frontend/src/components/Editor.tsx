@@ -58,7 +58,7 @@ export const Editor: React.FC = () => {
 
   if (!currentFile) {
     return (
-      <div className="flex-1 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black flex flex-col items-center justify-center h-screen">
+      <div className="flex-1 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black flex flex-col items-center justify-center h-screen -mt-20">
         <div className="text-center space-y-8 max-w-md px-6">
           <div className="mb-4">
             <TypeAnimation
@@ -128,9 +128,11 @@ export const Editor: React.FC = () => {
             ref={fileInputRef}
             onChange={handleFolderSelected}
             style={{ display: 'none' }}
-            webkitdirectory=""
-            directory=""
             multiple
+            {...{
+              webkitdirectory: "",
+              directory: "",
+            } as { [key: string]: string }}
           />
         </div>
       </div>
@@ -192,9 +194,15 @@ export const Editor: React.FC = () => {
           },
           parameterHints: { enabled: true },
           suggestOnTriggerCharacters: true,
-          lightbulb: { enabled: true }
+          // The editor will still show code actions when available
         }}
-        beforeMount={(monaco) => defineMonacoThemes(monaco)}
+        onMount={(editor, monaco) => {
+          defineMonacoThemes(monaco);
+          editor.focus();
+        }}
+        beforeMount={(monaco) => {
+          defineMonacoThemes(monaco);
+        }}
       />
       {showCodeDiff && (
         <InlineCodeDiffViewer

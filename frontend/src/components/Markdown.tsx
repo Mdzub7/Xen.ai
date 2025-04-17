@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ClipboardCopy, Check, CheckSquare } from 'lucide-react';
+import { UnifiedCodeBlock } from './UnifiedCodeBlock';
 import rehypeRaw from 'rehype-raw';
 import { useEditorStore } from '../store/editorStore';
 
@@ -52,32 +50,12 @@ const MarkdownWithCodeButtons: React.FC<MarkdownWithCodeButtonsProps> = ({ conte
           
           if (!inline && match) {
             return (
-              <div className="relative group mb-4">
-                <div className="absolute right-2 top-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => handleCopy(code)}
-                    className="p-1 rounded bg-gray-700 hover:bg-gray-600 text-white"
-                    title="Copy code"
-                  >
-                    {copiedCode === code ? <Check size={16} /> : <ClipboardCopy size={16} />}
-                  </button>
-                  <button
-                    onClick={() => handleApply(code)}
-                    className="p-1 rounded bg-blue-600 hover:bg-blue-500 text-white"
-                    title="Apply code"
-                  >
-                    <CheckSquare size={16} />
-                  </button>
-                </div>
-                <SyntaxHighlighter
-                  style={vscDarkPlus as any}
-                  language={match[1]}
-                  PreTag="div"
-                  {...props}
-                >
-                  {code}
-                </SyntaxHighlighter>
-              </div>
+              <UnifiedCodeBlock
+                code={code}
+                language={match[1]}
+                showApply={true}
+                showDownload={false}
+              />
             );
           }
           

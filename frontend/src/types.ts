@@ -5,6 +5,8 @@ export type Message = {
   timestamp: string;
 };
 
+export type AIModel = 'gemini' | 'deepseek' | 'qwen-2.5';
+
 export type File = {
   id: string;
   name: string;
