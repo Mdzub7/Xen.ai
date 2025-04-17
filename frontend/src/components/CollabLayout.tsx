@@ -8,10 +8,11 @@ import { useEditorStore } from '../store/editorStore';
 import { SidePanel } from './SidePanel';
 import { Toolbar } from './Toolbar';
 import { StatusBar } from './StatusBar';
+import CollabEditor from './CollabEditor';
+import CollabFileExplorer from './CollabFileExplorer';
 
-
-const Layout: React.FC = () => {
-  const { isAIPanelOpen, toggleAIPanel, currentView } = useEditorStore();
+const CollabLayout: React.FC = () => {
+  const { isAIPanelOpen, toggleAIPanel, currentView} = useEditorStore();
 
   React.useEffect(() => {
     // Ensure AI Panel is open on initial load
@@ -22,22 +23,10 @@ const Layout: React.FC = () => {
     }
   }, []);
 
-  // const renderSidePanel = () => {
-  //   switch (currentView) {
-  //     case 'explorer':
-  //       return <FileExplorer />;
-  //     case 'search':
-  //       return <SearchView />;
-  //     case 'settings':
-  //       return <SettingsView />;
-  //     case 'profile':
-  //       return <ProfileView />;
-  //     case 'logout':
-  //       return null;
-  //     default:
-  //       return null;
-  //   }
-  // };
+  // Render the appropriate file explorer based on collaboration mode
+  const renderFileExplorer = () => {
+      return <CollabFileExplorer />;
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black">
@@ -52,14 +41,14 @@ const Layout: React.FC = () => {
             {/* Side Panel */}
             {currentView !== 'none' && (
                 <div className="hidden md:block w-60 flex-shrink-0 bg-gradient-to-b from-[#0A192F] via-[#0F1A2B] to-black border-r border-white/10 z-10">
-                    <SidePanel />
+                    {currentView === 'explorer' ? renderFileExplorer() : <SidePanel />}
                 </div>
             )}
 
             {/* Main Content Area */}
             <div className={`flex flex-col flex-1 min-w-0 transition-all duration-300 ${isAIPanelOpen ? 'mr-[30vw]' : ''}`}>
                 <div className="flex-grow overflow-hidden">
-                    <Editor />
+                    <CollabEditor />
                 </div>
                 <div className="h-[30vh] border-t border-white/10 overflow-hidden">
                     <Terminal />
@@ -75,7 +64,7 @@ const Layout: React.FC = () => {
             )}
         </div>
     </div>
-);
+  );
 };
 
-export default Layout;
+export default CollabLayout;

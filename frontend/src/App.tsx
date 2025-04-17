@@ -8,6 +8,7 @@ import { NotFoundPage } from './components/NotFoundPage';
 import ForgotPassword from './components/ForgotPassowrd';
 import  Layout  from './components/Layout';
 import { ThemeProvider } from './components/ThemeProvider';
+import CollabLayout from './components/CollabLayout';
 
 
 const App: React.FC = () => {
@@ -27,7 +28,7 @@ const App: React.FC = () => {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/v1/*" element={<Layout />} />
+          <Route path="/v1/*" element={<CollabLayout />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
