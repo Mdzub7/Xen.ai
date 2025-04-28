@@ -42,25 +42,43 @@ async def gemini_generate_review(code: str) -> str:
 
 # Update the qwen_generate_review function to use streaming
 async def qwen_generate_review(code: str) -> str:
-    """Calls Qwen API to analyze and review code."""
+    """Calls Groq API to analyze and review code."""
 
-    # GEMINI
+    # Using Groq's LLaMA model instead of decommissioned Qwen
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     if not GROQ_API_KEY:
         raise ValueError("GROQ API key is missing! Set GROQ_API_KEY as an environment variable.")
 
-    client=Groq(api_key=GROQ_API_KEY)
+    client = Groq(api_key=GROQ_API_KEY)
 
     try:
-        user_content = f"User question: {code}"
+        # Format the prompt to ensure consistent output format
+        formatted_prompt = f"""You are a helpful coding assistant. Please help with the following request:
+
+{code}
+
+Please provide your response in the following format:
+1. First give a brief explanation of what you're going to implement
+2. Then provide the code implementation using this exact format:
+
+File: [filename]
+```java
+[code content]
+```
+
+For multiple files, repeat the above format for each file.
+Make sure to include proper package declarations and imports in each file.
+"""
             
         response = client.chat.completions.create(
-            messages = [
+            messages=[
                 {"role": "system", "content": SYSTEM_INSTRUCTION},
-                {"role": "user", "content": user_content}
+                {"role": "user", "content": formatted_prompt}
             ],
-            model="qwen-2.5-coder-32b",
-            stream=True
+            model="llama2-70b-4096",  # Using LLaMA 2 70B model
+            stream=True,
+            temperature=0.3,
+            max_tokens=4000
         )
         
         full_response = ""
@@ -68,10 +86,13 @@ async def qwen_generate_review(code: str) -> str:
             if chunk.choices and chunk.choices[0].delta.content:
                 full_response += chunk.choices[0].delta.content
         
+        if not full_response.strip():
+            raise ValueError("Empty response received from Groq")
+            
         return full_response
     except Exception as e:
-        print(f"Error in generating the review in Qwen: {e}")
-        return "Failed to generate review in Qwen."
+        print(f"Error in generating code with Groq: {str(e)}")
+        raise ValueError(f"Failed to generate code with Groq: {str(e)}")
 
 # Update the deepseek_generate_review function to use streaming
 async def deepseek_generate_review(code: str) -> str:
@@ -84,16 +105,33 @@ async def deepseek_generate_review(code: str) -> str:
     client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://openrouter.ai/api/v1")
 
     try:
+        # Format the prompt to ensure consistent output format
+        formatted_prompt = f"""You are a helpful coding assistant. Please help with the following request:
 
-        user_content = f"User question: {code}"
+{code}
+
+Please provide your response in the following format:
+1. First give a brief explanation of what you're going to implement
+2. Then provide the code implementation using this exact format:
+
+File: [filename]
+```java
+[code content]
+```
+
+For multiple files, repeat the above format for each file.
+Make sure to include proper package declarations and imports in each file.
+"""
             
         response = client.chat.completions.create(
-            model="deepseek/deepseek-r1:free",
-            messages = [
+            model="deepseek/deepseek-coder-33b",
+            messages=[
                 {"role": "system", "content": SYSTEM_INSTRUCTION},
-                {"role": "user", "content": user_content}
+                {"role": "user", "content": formatted_prompt}
             ],
-            stream=True  # Enable streaming
+            stream=True,
+            temperature=0.3,
+            max_tokens=4000
         )
         
         full_response = ""
@@ -101,10 +139,13 @@ async def deepseek_generate_review(code: str) -> str:
             if chunk.choices and chunk.choices[0].delta.content:
                 full_response += chunk.choices[0].delta.content
         
+        if not full_response.strip():
+            raise ValueError("Empty response received from DeepSeek")
+            
         return full_response
     except Exception as e:
-        print(f"Error in generating the review in DeepSeek: {e}")
-        return "Failed to generate review in DeepSeek."
+        print(f"Error in generating code with DeepSeek: {str(e)}")
+        raise ValueError(f"Failed to generate code with DeepSeek: {str(e)}")
 
 # Add this function after the qwen_generate_review function
 
